@@ -25,11 +25,8 @@ for i, j in itertools.product(range(H), range(W)):
 print len(CITYMAP)
 
 def isReachable(x, y):
-    if ISREACHABLEMAP[i][j] == 1:
-        return True
-    else if ISREACHABLEMAP[i][j] == 1:
-        return False
-    else:
+    if Rea
+
         
 def checkNeighbors(x, y):
 
