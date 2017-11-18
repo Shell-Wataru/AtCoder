@@ -36,9 +36,9 @@ int main()
         }
     }
     sort(ABC.begin(), ABC.end(),
-                        [](vector<long long> x, vector<long long> y) -> int {
-                        return ( x < y );
-                        } );
+        [&](vector<long long> x, vector<long long> y) -> int {
+        return ( (x[maxIndex] - min(x[]) < y );
+    } );
     for (i)
     return 0;
 }

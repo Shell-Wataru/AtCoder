@@ -71,7 +71,6 @@ int main()
     }
 
     if (ketaLow1 != ketaLow2){
-        cout << "tigau" << endl;
         if (ketaLow2 == 10){
             keta = ketaLow1;
         }else{

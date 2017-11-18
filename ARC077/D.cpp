@@ -16,6 +16,16 @@ int main()
 {
     // 整数の入力
     long long N,i,K,temp,all,all_1,out,out_1,all_2,K1,K2;
+    for (i= 0;i<= ;i++){
+        cin >> temp;
+        if (mp.find(temp) != mp.end()){
+            K1 = mp[temp];
+            K2 = i;
+        }else{
+            mp[temp] = i;
+        };
+    }
+
     map<int,int> mp;
     cin >> N;
     all = 1;
