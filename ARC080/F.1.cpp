@@ -5,11 +5,10 @@
 #include <set>
 #include <queue>
 using namespace std;
-
+#define INT_MAX 2147483647;
 // dinic
 class max_flow {
     struct edge { int to, cap, rev; };
-    static const int INT_MAX = 2147483647;
     int V;
     vector<vector<edge>> G;
     vector<int> level;
