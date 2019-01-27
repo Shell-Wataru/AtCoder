@@ -10,20 +10,23 @@ using namespace std;
 int main()
 {
     // 整数の入力
-    long long N;
-    string tempS;
-    vector<string> ReverseDic;
+    long long N,maxD,sumD,d;
     cin >> N;
+    maxD = 0;
+    sumD = 0;
     for (int i = 0;i< N;i++){
-        cin >> tempS;
-        reverse(tempS.begin(),tempS.end());
-        ReverseDic.push_back(tempS);
+        cin >> d;
+        sumD += d;
+        if (d > maxD){
+            maxD = d;
+        }
     }
-    sort(ReverseDic.begin(),ReverseDic.end());
-    for (int i = 0;i< N;i++){
-        tempS = ReverseDic[i];
-        reverse(tempS.begin(),tempS.end());
-        cout << tempS << endl;
+
+    cout << sumD << endl;
+    if (2 * maxD > sumD){
+        cout << 2 * maxD -  sumD;
+    }else{
+        cout << 0 << endl;
     }
 
     return 0;

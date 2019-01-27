@@ -13,59 +13,41 @@
 
 using namespace std;
 
-long long N,M,K,i,j,badPairA,badPairB;
-int* Table;
-mt19937 mt(0);
+long long N,M,K,i,j;
 
-bool Check(bool** BadPairs,long long N,long long K){
-    for (int i = 0;i<N ;i++){
-        Table[i] = i;
+map<long long,long long> decomposite(long long N, map<long long,long long> & primes,long long next_p = 2){
+    if (N == 1){
+        return primes;
     }
 
-    uniform_int_distribution<int> randN(0, N-1);
-    uniform_int_distribution<int> randN_1(1, N-1);
-    for (int i = 0;i<K;i++){
-        int irekaeA = randN(mt);
-        int irekaeB = (irekaeA + randN_1(mt)) % N;
-        int temp = Table[irekaeA];
-        Table[irekaeA] = Table[irekaeB];
-        Table[irekaeB] = temp;
-    }
 
-    for(int i = 0;i<N;i++){
-        if (BadPairs[Table[i]][Table[(i+1)%N]]){
-            return false;
+    while (next_p * next_p <= N ) {
+        if (N % next_p == 0) {
+            cout << next_p << endl;
+            primes[next_p] += 1;
+            return decomposite(N/next_p,primes,next_p);
+        } else {
+            next_p++;
         }
     }
-    return true;
+    cout << N << endl;
+    primes[N] += 1;
+    return primes;
 }
 
 int main()
 {
     // 整数の入力
-    cin >> N >> M >> K;
-    Table = new int[N];
-    bool** BadPairs = new bool*[N];
-    for (i = 0;i<N;i++){
-        BadPairs[i] = new bool[N];
-        for(j =0;j<N;j++){
-            BadPairs[i][j] = false;
-        }
+    cin >> N >> M;
+    map<long long,long long> primes;
+    decomposite(N,primes);
+    cout << "deconposited" <<endl;
+    cout << primes.size() << endl;
+    long long first = 1<<(M-1);
+    cout  << first << endl;
+    for(auto itr = primes.begin(); itr != primes.end(); ++itr) {
+        first = (first * (itr->second + 1) ) % 1000000007;
     }
-
-    for (i = 0;i<M;i++){
-        cin >> badPairA >> badPairB;
-        BadPairs[badPairA][badPairB] = true;
-        BadPairs[badPairB][badPairA] = true;
-    }
-
-    double total = 0;
-    int times = 4000000;
-    for (i = 0;i<4000000;i++){
-        if (Check(BadPairs,N,K)){
-            total += 1;
-        }
-    }
-    cout << total/times << endl;
+    cout << first << endl;
     return 0;
 }

@@ -86,7 +86,7 @@ int main()
     // 整数の入力
     long long H,W,i,j,minCircle,minCross,crossTotal,circleTotal,lastCharactorIndex;
     priority_queue<BetweenInfo,vector<BetweenInfo>, function<bool(BetweenInfo,BetweenInfo)>>q(
-        [](BetweenInfo a,BetweenInfo b){return a.circleImportance + a.crossImportance <b.circleImportance + b.circleImportance;}
+        [](BetweenInfo a,BetweenInfo b){return a.circleImportance + a.crossImportance <b.circleImportance + b.crossImportance;}
     );
     crossTotal = 0;
     circleTotal = 0;
@@ -149,10 +149,10 @@ int main()
         q.pop();
     }
 
-    cout << crossTotal<< endl;
-    cout << circleTotal << endl;
-    cout << minCircle << endl;
-    cout << minCross << endl;
+    //cout << crossTotal<< endl;
+    //cout << circleTotal << endl;
+    //cout << minCircle << endl;
+    //cout << minCross << endl;
 
     if (minCircle == -1 && minCross == -1){
         if (crossTotal < circleTotal){
