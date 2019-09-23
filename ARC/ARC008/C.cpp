@@ -1,59 +1,109 @@
-#include <iostream>
+#include<iostream>
 #include <algorithm>
 #include <vector>
 #include <deque>
 #include <queue>
 #include <set>
-#include <ctime>
-#include <bitset>
+#include <map>
+#include <limits>
+#include <cmath>
+#include <iomanip>
+#include <functional>
+#include <random>
+#include <boost/multiprecision/cpp_int.hpp>
 
 using namespace std;
+using ll = long long;
+namespace mp = boost::multiprecision;
 
-long long pattern_mask = 0;
-string pattern;
+struct person {
+    ll x,y,t,r;
+};
+
+const int NONE = -1;
+
+struct S
+{
+    long long node, prev;
+    double cost;
+
+    S(long long n, double c, long long p) : node(n), cost(c), prev(p) {}
+    bool operator>(const S &s) const
+    {
+        return cost > s.cost;
+    }
+};
+
+class G
+{
+    long long n;
+    vector<person> people;
+
+  public:
+    vector<double> minc;
+    vector<long long> prev;
+
+    G(long long n, vector<person> people) : n(n), people(people), minc(n, NONE), prev(n) {}
+
+    void dijkstra(long long start)
+    {
+        minc.assign(n, NONE);
+        priority_queue<S, vector<S>, greater<S> > pq;
+        pq.push(S(start, 0, NONE));
+        while (!pq.empty())
+        {
+            S s = pq.top();
+            pq.pop();
+            if (minc[s.node] != NONE)
+            {
+                continue;
+            }
+            minc[s.node] = s.cost;
+            prev[s.node] = s.prev;
+            for (int i = 0;i<n;i++)
+            {
+                if(s.node != i && minc[i] == NONE){
+                    double cost = hypot(people[s.node].x -  people[i].x,people[s.node].y -  people[i].y)/min(people[s.node].t,people[i].r);
+                    pq.push(S(i, s.cost + cost, s.node));
+                }
+            }
+        }
+    }
+
+    void input();
+    void output()
+    {
+        for (int i = 0; i < n; i++)
+        {
+            cout << i << ":" << minc[i] << endl;
+        }
+    };
+};
+
 
 int main()
 {
     // 整数の入力
-    cin >> pattern;
-    long long N = pattern.size();
-    for(int i = 0; i< pattern.size();i++){
-        if (pattern[i] == 'o'){
-            pattern_mask |= 1<<i;
+    ll N;
+    cin >> N;
+    vector<person> people;
+    for(int i = 0; i< N;i++){
+        person p;
+        cin >> p.x >> p.y >> p.t >> p.r;
+        people.push_back(p);
+    }
+    G graph(N,people);
+    graph.dijkstra(0);
+    // graph.output();
+    double value = 0;
+    sort(graph.minc.begin(),graph.minc.end());
+    for(int i = 1;i <N;i++){
+        if (value < graph.minc[i] + (N - 1 - i)){
+            value = graph.minc[i] + (N - 1 - i);
         }
     }
-    // cout << bitset<10>(pattern_mask) << endl;
 
-    long long min_tvs = 11;
-    long long min_tv_pattern = 0;
-    for (int i = 0; i < (1<<N);i++){
-        long long current_pattern = 0;
-        long long tvs = 0;
-        for (int j = 0;j< N;j++){
-            if (i & (1<<j)){
-                current_pattern |= (pattern_mask << j) | (pattern_mask >> (N - j));
-                tvs++;
-            }
-        }
-        long long max_continue_count = 0;
-        long long continue_count = 0;
+    cout << fixed <<value << endl;
 
-        for (int j = 0;j< 2*N;j++){
-            if (current_pattern & (1<<j)){
-                continue_count++;
-                max_continue_count = max(max_continue_count,continue_count);
-            }else{
-                continue_count = 0;
-            }
-        }
-        if (max_continue_count >= N){
-            min_tvs = min(tvs,min_tvs);
-            if (min_tvs == tvs){
-                min_tv_pattern = i;
-            }
-        }
-    }
-    cout << min_tvs << endl;
-    // cout << bitset<10>(min_tv_pattern) << endl;
     return 0;
 }
