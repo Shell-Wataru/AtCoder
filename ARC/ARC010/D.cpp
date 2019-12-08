@@ -5,6 +5,7 @@
 #include <queue>
 #include <set>
 #include <map>
+#include <stack>
 #include <limits>
 #include <cmath>
 #include <iomanip>
@@ -15,185 +16,358 @@
 using namespace std;
 using ll = long long;
 namespace mp = boost::multiprecision;
-
-class UnionFindTree
+// https://ei1333.github.io/luzhiled/snippets/graph/chu-liu-edmond.html
+template <typename T>
+struct edge
 {
-    map<ll, ll> union_tree_data;
+    int src, to;
+    T cost;
 
-public:
-    UnionFindTree() {}
+    edge(int to, T cost) : src(-1), to(to), cost(cost) {}
 
-    UnionFindTree(vector<ll> verticals)
+    edge(int src, int to, T cost) : src(src), to(to), cost(cost) {}
+
+    edge &operator=(const int &x)
     {
-        for (auto v : verticals)
-        {
-            union_tree_data[v] = v;
-        }
+        to = x;
+        return *this;
     }
 
-    void add_vertical(ll v)
+    operator int() const { return to; }
+};
+
+template <typename T>
+using Edges = vector<edge<T>>;
+template <typename T>
+using WeightedGraph = vector<Edges<T>>;
+using UnWeightedGraph = vector<vector<int>>;
+template <typename T>
+using Matrix = vector<vector<T>>;
+
+struct UnionFind
+{
+    vector<int> data;
+
+    UnionFind(int sz)
     {
-        union_tree_data[v] = v;
+        data.assign(sz, -1);
     }
 
-    void reset()
+    bool unite(int x, int y)
     {
-        for (auto &pair : union_tree_data)
-        {
-            pair.second = pair.first;
-        }
-    }
-    long long find(long long N)
-    {
-        if (union_tree_data[N] == N)
-        {
-            return N;
-        }
-        else
-        {
-            return union_tree_data[N] = find(union_tree_data[N]);
-        }
-    }
-
-    bool same(long long x, long long y)
-    {
-        return find(x) == find(y);
-    }
-
-    void union_tree(long long x, long long y)
-    {
-        x = find(x);
-        y = find(y);
+        x = find(x), y = find(y);
         if (x == y)
-            return;
-        union_tree_data[x] = y;
+            return (false);
+        if (data[x] > data[y])
+            swap(x, y);
+        data[x] += data[y];
+        data[y] = x;
+        return (true);
+    }
+
+    bool same(int x, int y)
+    {
+        x = find(x), y = find(y);
+        return x == y;
+    }
+    int find(int k)
+    {
+        if (data[k] < 0)
+            return (k);
+        return (data[k] = find(data[k]));
+    }
+
+    int size(int k)
+    {
+        return (-data[find(k)]);
     }
 };
 
-class edge
+template <typename T, typename E = T>
+struct SkewHeap
 {
-public:
-    ll from, to, cost;
-};
+    using G = function<T(T, E)>;
+    using H = function<E(E, E)>;
 
-class MST
-{
-public:
-    vector<edge> edges;
-    vector<ll> verticals;
-    map<set<ll>, ll> using_edge_cached_data;
-    map<set<ll>, ll> ban_edge_cached_data;
-    vector<ll> kth_costs;
-
-    ll current_cost, next_cost, next_remove_edge_cache;
-    UnionFindTree uft;
-
-    void add_vertical(ll v)
+    struct Node
     {
-        verticals.push_back(v);
-        uft.add_vertical(v);
-    }
+        T key;
+        E lazy;
+        Node *l, *r;
+    };
 
-    bool contains_vertical(ll v)
+    const bool rev;
+    const G g;
+    const H h;
+
+    SkewHeap(bool rev = false) : g([](const T &a, const E &b) { return a + b; }),
+                                 h([](const E &a, const E &b) { return a + b; }), rev(rev) {}
+
+    SkewHeap(const G &g, const H &h, bool rev = false) : g(g), h(h), rev(rev) {}
+
+    Node *propagate(Node *t)
     {
-        return binary_search(verticals.begin(), verticals.end(), v);
-    }
-
-    pair<ll, set<ll>> solve(set<ll> &ban_edges)
-    {
-        ll union_count = 0;
-        ll cost = 0;
-        set<ll> using_edges;
-        uft.reset();
-
-        for (int i = 0; i < edges.size(); i++)
+        if (t->lazy != 0)
         {
-            if (ban_edges.find(i) != ban_edges.end())
+            if (t->l)
+                t->l->lazy = h(t->l->lazy, t->lazy);
+            if (t->r)
+                t->r->lazy = h(t->r->lazy, t->lazy);
+            t->key = g(t->key, t->lazy);
+            t->lazy = 0;
+        }
+        return t;
+    }
+
+    Node *merge(Node *x, Node *y)
+    {
+        if (!x || !y)
+            return x ? x : y;
+        propagate(x), propagate(y);
+        if ((x->key > y->key) ^ rev)
+            swap(x, y);
+        x->r = merge(y, x->r);
+        swap(x->l, x->r);
+        return x;
+    }
+
+    void push(Node *&root, const T &key)
+    {
+        root = merge(root, new Node({key, 0, nullptr, nullptr}));
+    }
+
+    T top(Node *root)
+    {
+        return propagate(root)->key;
+    }
+
+    T pop(Node *&root)
+    {
+        T top = propagate(root)->key;
+        auto *temp = root;
+        root = merge(root->l, root->r);
+        delete temp;
+        return top;
+    }
+
+    bool empty(Node *root) const
+    {
+        return !root;
+    }
+
+    void add(Node *root, const E &lazy)
+    {
+        if (root)
+        {
+            root->lazy = h(root->lazy, lazy);
+            propagate(root);
+        }
+    }
+
+    Node *makeheap()
+    {
+        return nullptr;
+    }
+};
+
+template <typename T>
+struct MinimumSpanningTreeArborescence
+{
+    using Pi = pair<T, int>;
+    using Heap = SkewHeap<Pi, int>;
+    using Node = typename Heap::Node;
+    const Edges<T> &es;
+    const int V;
+    T INF;
+
+    MinimumSpanningTreeArborescence(const Edges<T> &es, int V) : INF(numeric_limits<T>::max()), es(es), V(V) {}
+
+    T build(int start)
+    {
+        auto g = [](const Pi &a, const T &b) { return Pi(a.first + b, a.second); };
+        auto h = [](const T &a, const T &b) { return a + b; };
+        Heap heap(g, h);
+        vector<Node *> heaps(V, heap.makeheap());
+        cout << "heap inserting..." << endl;
+        for (auto &e : es)
+            heap.push(heaps[e.to], {e.cost, e.src});
+        cout << "heap inserted" << endl;
+        UnionFind uf(V);
+        vector<int> used(V, -1);
+        used[start] = start;
+
+        T ret = 0;
+        for (int s = 0; s < V; s++)
+        {
+            stack<int> path;
+            for (int u = s; used[u] < 0;)
             {
-                continue;
-            }
-            edge &e = edges[i];
-            if (!uft.same(e.from, e.to))
-            {
-                uft.union_tree(e.from, e.to);
-                cost += e.cost;
-                union_count++;
-                using_edges.insert(i);
-                if (union_count == verticals.size() - 1)
+                path.push(u);
+                used[u] = s;
+                if (heap.empty(heaps[u]))
+                    return -1;
+                auto p = heap.top(heaps[u]);
+                ret += p.first;
+                heap.add(heaps[u], -p.first);
+                heap.pop(heaps[u]);
+                int v = uf.find(p.second);
+                if (used[v] == s)
                 {
-                    break;
+                    int w;
+                    Node *nextheap = heap.makeheap();
+                    do
+                    {
+                        w = path.top();
+                        path.pop();
+                        nextheap = heap.merge(nextheap, heaps[w]);
+                    } while (uf.unite(v, w));
+                    heaps[uf.find(v)] = nextheap;
+                    used[uf.find(v)] = -1;
                 }
+                u = uf.find(v);
             }
         }
+        return ret;
+    }
+};
 
-        if (union_count != verticals.size() - 1)
+class Point
+{
+public:
+    ll index = -1;
+    vector<ll> position;
+
+    ll distance(Point q)
+    {
+        ll dist = 0;
+        for (size_t i = 0; i < position.size(); i++)
         {
-            return make_pair(-1, using_edges);
+            ll d = position[i] - q.position[i];
+            dist += d * d;
+        }
+        return dist;
+    }
+};
+
+//zero indexed and vector
+class KDTree
+{
+private:
+    /** @brief k-d tree node.
+		*/
+    struct Node
+    {
+        Point p;
+        Node *left = nullptr;
+        Node *right = nullptr;
+        int depth = -1;
+        int axis = -1; //!< dimension's axis
+    };
+
+    Node *buildRecursive(typename vector<Point>::iterator start_itr, typename vector<Point>::iterator end_itr, ll depth)
+    {
+        ll npoints = end_itr - start_itr;
+        if (npoints <= 0)
+            return nullptr;
+
+        const int axis = depth % (*start_itr).position.size();
+        const int mid = (npoints - 1) / 2;
+
+        std::nth_element(start_itr, start_itr + mid, end_itr, [&](Point &lhs, Point &rhs) {
+            return lhs.position[axis] < rhs.position[axis];
+        });
+
+        Node *node = new Node();
+        node->axis = axis;
+        node->depth = depth;
+        node->p = *(start_itr + mid);
+        node->left = buildRecursive(start_itr, start_itr + mid, depth + 1);
+        node->right = buildRecursive(start_itr + mid + 1, end_itr, depth + 1);
+        return node;
+    }
+
+public:
+    vector<Point> data;
+    Node *root = nullptr;
+    KDTree(vector<Point> &_data) : data(_data)
+    {
+        // cout << data[0][1] << endl;
+        root = buildRecursive(data.begin(), data.end(), 0);
+    }
+
+    Point *nnSearch(Point &query)
+    {
+        Node *nearestNode = nullptr;
+
+        ll minDistance = (1LL << 62) - 1;
+        nnSearchRecursive(query, root, nearestNode, &minDistance);
+        if (!nearestNode)
+        {
+            return nullptr;
         }
         else
         {
-            return make_pair(cost, using_edges);
+            return &nearestNode->p;
+        }
+    }
+    void nnSearchRecursive(Point &query, Node *node, Node* &nearestNode, ll *minDistance)
+    {
+        if (node == nullptr)
+        {
+            return;
+        }
+
+        ll current_node_distance = query.distance(node->p);
+
+        if (current_node_distance < *minDistance)
+        {
+            *minDistance = current_node_distance;
+            nearestNode = node;
+        }
+
+        const int axis = node->axis;
+        const int containsInLeft = query.position[axis] < node->p.position[axis];
+
+        if (containsInLeft)
+        {
+            nnSearchRecursive(query, node->left, nearestNode, minDistance);
+        }
+        else
+        {
+            nnSearchRecursive(query, node->right, nearestNode, minDistance);
+        }
+
+        const double other_side_minimum = fabs(query.position[axis] - node->p.position[axis]);
+        if (other_side_minimum < *minDistance)
+        {
+            if (containsInLeft)
+            {
+                nnSearchRecursive(query, node->right, nearestNode, minDistance);
+            }
+            else
+            {
+                nnSearchRecursive(query, node->left, nearestNode, minDistance);
+            }
         }
     }
 
-    ll solve_kth()
+    void show()
     {
-        sort(edges.begin(), edges.end(), [](edge &x, edge &y) -> ll {
-            return x.cost > y.cost;
-        });
-        queue<pair<set<ll>, set<ll>>> q;
-        set<ll> b;
-        pair<ll, set<ll>> p = solve(b);
-        ll cost = p.first;
-        set<ll> &u = p.second;
-        ban_edge_cached_data[b] = cost;
-        using_edge_cached_data[u] = cost;
-        q.push(make_pair(b, u));
-        while (!q.empty())
+        if (root != nullptr)
         {
-            set<ll> &current_tree = q.front().second;
-            for (auto e : current_tree)
-            {
-                set<ll> ban_edges = q.front().first;
-                ban_edges.insert(e);
-
-                if (ban_edge_cached_data.find(ban_edges) != ban_edge_cached_data.end())
-                {
-                    continue;
-                }
-                pair<ll, set<ll>> &&p = solve(ban_edges);
-                ll cost = p.first;
-                set<ll> &u = p.second;
-                ban_edge_cached_data[ban_edges] = cost;
-
-                if (cost != -1 && using_edge_cached_data.find(u) == using_edge_cached_data.end())
-                {
-                    using_edge_cached_data[u] = cost;
-                    q.push(make_pair(ban_edges, u));
-                }
-            }
-            q.pop();
+            show(root);
         }
-
-        for (auto &a : using_edge_cached_data)
-        {
-            kth_costs.push_back(a.second);
-            sort(kth_costs.begin(), kth_costs.end(), [](ll x, ll y) -> ll {
-                return x > y;
-            });
-        }
-        return 0;
     }
-
-    void print_all()
+    void show(Node *node)
     {
-        for (auto a : using_edge_cached_data)
+        cout << "depth:" << node->depth << " position:" << node->p.position[0] << " " << node->p.position[1] << endl;
+        if (node->left != nullptr)
         {
-            for (auto e : a.first)
-            {
-                cout << e << ",";
-            }
-            cout << ":" << a.second << endl;
+            show(node->left);
+        }
+        if (node->right != nullptr)
+        {
+            show(node->right);
         }
     }
 };
@@ -201,80 +375,77 @@ public:
 int main()
 {
     // 整数の入力
-    ll A, T, k, M;
-    vector<MST> cities;
-    ll total = 0;
-    cin >> A >> T >> k;
-    for (int i = 0; i < A; i++)
+    ll N, M;
+    vector<Point> friends;
+    vector<Point> spies;
+    vector<edge<int>> edges;
+    vector<ll> min_distances;
+    cin >> N;
+    for (int i = 0; i < N; i++)
     {
-        ll N;
-        cin >> N;
-        MST c;
-        for (int j = 0; j < N; j++)
-        {
-            ll town;
-            cin >> town;
-            c.add_vertical(town);
-        }
-        cities.push_back(c);
-    }
-
-    for (auto &c : cities)
-    {
-        sort(c.verticals.begin(),c.verticals.end());
+        Point p;
+        p.index = i;
+        ll x, y;
+        scanf("%lld",&x);
+        scanf("%lld",&y);
+        // cin >> x >> y;
+        p.position.push_back(x);
+        p.position.push_back(y);
+        friends.push_back(p);
     }
 
     cin >> M;
     for (int i = 0; i < M; i++)
     {
-        edge e;
-        cin >> e.from >> e.to >> e.cost;
-        total += e.cost;
-        for (auto &c : cities)
-        {
-            if (c.contains_vertical(e.from) && c.contains_vertical(e.to))
-            {
-                c.edges.push_back(e);
-                break;
-            }
-        }
+        Point p;
+        p.index = i;
+        ll x, y;
+        scanf("%lld",&x);
+        scanf("%lld",&y);
+        // cin >> x >> y;
+        p.position.push_back(x);
+        p.position.push_back(y);
+        spies.push_back(p);
     }
 
-    for (auto &c : cities)
+    KDTree kdt(spies);
+
+    for (int i = 0; i < N; i++)
     {
-        c.solve_kth();
-    }
-
-
-    vector<ll> costs;
-    costs.push_back(0);
-    for (auto &city : cities)
-    {
-        vector<ll> new_costs;
-        for (auto &c : costs)
+        edges.push_back(edge<int>(N, i, 1));
+        Point *nearest_spy = kdt.nnSearch(friends[i]);
+        ll min_distance;
+        if (nearest_spy)
         {
-            for (auto city_cost : city.kth_costs)
+            min_distance = friends[i].distance(*nearest_spy);
+        }
+        else
+        {
+            min_distance = (1LL << 62) - 1;
+        }
+        min_distances.push_back(min_distance);
+    }
+
+    for (int i = 0; i < N; i++)
+    {
+        // cout << min_distance << endl;
+        for (int j = i + 1; j < N; j++)
+        {
+            ll distance = friends[i].distance(friends[j]);
+            if (distance < min_distances[i])
             {
-                new_costs.push_back(c + city_cost);
+                edges.push_back(edge<int>(i, j, 0));
             }
-        }
-        sort(new_costs.begin(), new_costs.end(), greater<ll>());
-        costs.clear();
-        for(int i =0;i<k && i< new_costs.size();i++){
-            costs.push_back(new_costs[i]);
+
+            if (distance < min_distances[j])
+            {
+                edges.push_back(edge<int>(j, i, 0));
+            }
+
         }
     }
-
-    // for(auto a :costs){
-    //     cout << a << endl;
-    // }
-    // cout << costs.size() << endl;
-    if(k <= costs.size()){
-        // cout << costs[k - 1] << endl;
-        cout << total - costs[k - 1] << endl;
-    }else{
-        cout << -1 << endl;
-    }
-
+    cout << "sssss" << endl;
+    MinimumSpanningTreeArborescence<int> msta(edges, N + 1);
+    std::cout << msta.build(N) << endl;
     return 0;
 }

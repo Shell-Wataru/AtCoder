@@ -12,45 +12,65 @@ using namespace std;
 using ll = long long;
 namespace mp = boost::multiprecision;
 
+vector<ll> month_firsts{
+        0,
+        31,
+        31+29,
+        31+29+31,
+        31+29+31+30,
+        31+29+31+30+31,
+        31+29+31+30+31+30,
+        31+29+31+30+31+30+31,
+        31+29+31+30+31+30+31+31,
+        31+29+31+30+31+30+31+31+30,
+        31+29+31+30+31+30+31+31+30+31,
+        31+29+31+30+31+30+31+31+30+31+30
+};
+
+int date(ll m,ll n){
+    return month_firsts[m-1] + n-1;
+}
+
+void update_holiday(vector<bool> &days, ll d){
+    if (d >= 366){
+
+    }else if (!days[d]){
+        days[d] = true;
+    }else{
+        update_holiday(days,d+1);
+    }
+}
 int main()
 {
     // 整数の入力
-    long long N,M,listened_disc;
-    time_t t;
-    string name,kit;
-
-    map<char,long long> num_order;
-    vector<string> numbers;
-    for(int i = 0;i<10;i++){
-        char c;
-        cin >> c;
-        num_order[c] = i;
-    }
+    long long N;
     cin >> N;
-    for(int i = 0;i<N;i++){
-        string s;
-        cin >> s;
-        numbers.push_back(s);
-    }
-
-    sort(numbers.begin(),numbers.end(),[&num_order](string &x,string &y)->bool{
-        if (x.size() == y.size()){
-            for(int i = 0;i <x.size();i++){
-                if(x[i] != y[i]){
-                    return num_order[x[i]] < num_order[y[i]];
-                }
-            }
-            return false;
-        }else{
-            return x.size() < y.size();
+    vector<bool> days(366,false);
+    for(int i = 0;i < 366;i++){
+        if(i% 7 == 0 || i% 7 == 6){
+            days[i] = true;
         }
-    });
-
-    // for(int i = 0;i<N;i++){
-    //     cout << numbers[i] << endl;
-    // }
-    for(auto s :numbers){
-        cout << s << endl;
     }
+
+    for(int i = 0;i < N;i++){
+        ll m,n;
+        char c;
+        cin >> m >> c >> n;
+        ll d = date(m,n);
+        // cout << d << endl;
+        update_holiday(days,d);
+    }
+
+    ll max_consequent = 0;
+    ll consequent = 0;
+    for(int i = 0;i < 366;i++){
+        if (days[i]){
+            consequent++;
+            max_consequent = max(max_consequent,consequent);
+        }else{
+            consequent = 0;
+        }
+    }
+    cout << max_consequent << endl;
     return 0;
 }

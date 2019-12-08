@@ -5,254 +5,360 @@
 #include <queue>
 #include <set>
 #include <map>
+#include <stack>
 #include <limits>
 #include <cmath>
 #include <iomanip>
 #include <functional>
 #include <random>
-#include <boost/multiprecision/cpp_int.hpp>
 
 using namespace std;
 using ll = long long;
-namespace mp = boost::multiprecision;
 
-class UnionFindTree
+// https://ei1333.github.io/luzhiled/snippets/graph/chu-liu-edmond.html
+template <typename T>
+struct edge
 {
-    map<ll, ll> union_tree_data;
+  int src, to;
+  T cost;
+
+  edge(int to, T cost) : src(-1), to(to), cost(cost) {}
+
+  edge(int src, int to, T cost) : src(src), to(to), cost(cost) {}
+
+  edge &operator=(const int &x)
+  {
+    to = x;
+    return *this;
+  }
+
+  operator int() const { return to; }
+};
+
+template <typename T>
+using Edges = vector<edge<T>>;
+template <typename T>
+using WeightedGraph = vector<Edges<T>>;
+using UnWeightedGraph = vector<vector<int>>;
+template <typename T>
+using Matrix = vector<vector<T>>;
+
+struct UnionFind
+{
+  vector<int> data;
+
+  UnionFind(int sz)
+  {
+    data.assign(sz, -1);
+  }
+
+  bool unite(int x, int y)
+  {
+    x = find(x), y = find(y);
+    if (x == y)
+      return (false);
+    if (data[x] > data[y])
+      swap(x, y);
+    data[x] += data[y];
+    data[y] = x;
+    return (true);
+  }
+
+  bool same(int x, int y)
+  {
+    x = find(x), y = find(y);
+    return x == y;
+  }
+  int find(int k)
+  {
+    if (data[k] < 0)
+      return (k);
+    return (data[k] = find(data[k]));
+  }
+
+  int size(int k)
+  {
+    return (-data[find(k)]);
+  }
+};
+
+template <typename T>
+struct MinimumSpanningTreeArborescence
+{
+  T INF;
+  vector<vector<T>> G;
+  const int V;
+  MinimumSpanningTreeArborescence(int V) : INF(numeric_limits<T>::max()), V(V), G(V,vector<T>(V,INF)){}
+
+  T build(int start)
+  {
+    UnionFind uf(V);
+    vector<int> used(V, -1);
+    used[start] = start;
+
+    T ret = 0;
+    for (int s = 0; s < V; s++)
+    {
+      stack<int> path;
+      for (int u = s; used[u] < 0;)
+      {
+        auto itr = min_element(G[u].begin(), G[u].end());
+        T cost = *itr;
+        ret += cost;
+        if (cost != 0)
+        {
+          for (int i = 0; i < V; i++)
+          {
+            if (G[u][i] != INF)
+            {
+              G[u][i] -= cost;
+            }
+          }
+        }
+        *itr = INF;
+        path.push(u);
+        used[u] = s;
+        int v = uf.find(itr - G[u].begin());
+        if (used[v] == s)
+        {
+          int w;
+          vector<T> nextEdges(V, INF);
+          do
+          {
+            w = path.top();
+            path.pop();
+            for (int i = 0; i < V; i++)
+            {
+              nextEdges[i] = min(nextEdges[i], G[w][i]);
+            }
+          } while (uf.unite(v, w));
+          int root = uf.find(v);
+          for (int i = 0; i < V; i++)
+          {
+            if (uf.same(root,i))
+            {
+              G[root][i] = INF;
+            }else{
+              G[root][i] = nextEdges[i];
+            }
+          }
+
+          used[root] = -1;
+        }
+        u = uf.find(v);
+      }
+    }
+    return ret;
+  }
+};
+
+class Point
+{
+public:
+    int index = -1;
+    vector<int> position;
+
+    ll distance(Point &q)
+    {
+        ll dist = 0;
+        for (size_t i = 0; i < position.size(); i++)
+        {
+            ll d = position[i] - q.position[i];
+            dist += d * d;
+        }
+        return dist;
+    }
+};
+
+//zero indexed and vector
+class KDTree
+{
+private:
+    /** @brief k-d tree node.
+		*/
+    struct Node
+    {
+        Point p;
+        Node *left = nullptr;
+        Node *right = nullptr;
+        int depth = -1;
+        int axis = -1; //!< dimension's axis
+    };
+
+    Node *buildRecursive(typename vector<Point>::iterator start_itr, typename vector<Point>::iterator end_itr, ll depth)
+    {
+        ll npoints = end_itr - start_itr;
+        if (npoints <= 0)
+            return nullptr;
+
+        const int axis = depth % (*start_itr).position.size();
+        const int mid = (npoints - 1) / 2;
+
+        std::nth_element(start_itr, start_itr + mid, end_itr, [&](Point &lhs, Point &rhs) {
+            return lhs.position[axis] < rhs.position[axis];
+        });
+
+        Node *node = new Node();
+        node->axis = axis;
+        node->depth = depth;
+        node->p = *(start_itr + mid);
+        node->left = buildRecursive(start_itr, start_itr + mid, depth + 1);
+        node->right = buildRecursive(start_itr + mid + 1, end_itr, depth + 1);
+        return node;
+    }
 
 public:
-    UnionFindTree() {}
-
-    UnionFindTree(vector<ll> verticals)
+    vector<Point> data;
+    Node *root = nullptr;
+    KDTree(vector<Point> &_data) : data(_data)
     {
-        for (auto v : verticals)
-        {
-            union_tree_data[v] = v;
-        }
+        // cout << data[0][1] << endl;
+        root = buildRecursive(data.begin(), data.end(), 0);
     }
 
-    void add_vertical(ll v)
+    Point *nnSearch(Point &query)
     {
-        union_tree_data[v] = v;
-    }
+        Node *nearestNode = nullptr;
 
-    void reset()
-    {
-        for (auto &pair : union_tree_data)
+        ll minDistance = (1LL << 62) - 1;
+        nnSearchRecursive(query, root, nearestNode, &minDistance);
+        if (!nearestNode)
         {
-            pair.second = pair.first;
-        }
-    }
-    long long find(long long N)
-    {
-        if (union_tree_data[N] == N)
-        {
-            return N;
+            return nullptr;
         }
         else
         {
-            return union_tree_data[N] = find(union_tree_data[N]);
+            return &nearestNode->p;
         }
     }
-
-    bool same(long long x, long long y)
+    void nnSearchRecursive(Point &query, Node *node, Node *&nearestNode, ll *minDistance)
     {
-        return find(x) == find(y);
-    }
-
-    void union_tree(long long x, long long y)
-    {
-        x = find(x);
-        y = find(y);
-        if (x == y)
+        if (node == nullptr)
+        {
             return;
-        union_tree_data[x] = y;
-    }
-};
-
-class edge
-{
-public:
-    ll from, to, cost;
-};
-
-class MST
-{
-public:
-    vector<edge> edges;
-    vector<ll> verticals;
-    vector<pair<ll, ll>> kth_costs;
-
-    ll current_cost, next_cost, next_remove_edge_cache;
-    UnionFindTree uft;
-
-    void add_vertical(ll v)
-    {
-        verticals.push_back(v);
-        uft.add_vertical(v);
-    }
-
-    bool contains_vertical(ll v)
-    {
-        return binary_search(verticals.begin(), verticals.end(), v);
-    }
-
-    ll solve_kth()
-    {
-        map<ll, ll> cost_counts;
-        ll n = edges.size();
-        ll r = verticals.size() - 1;
-        vector<bool> v(n);
-        fill(v.end() - r, v.end(), true);
-        do
-        {
-            ll cost = 0;
-            bool is_spine_tree = true;
-            uft.reset();
-            for (int i = 0; i < n; ++i)
-            {
-                if (v[i])
-                {
-                    edge &e = edges[i];
-                    if (!uft.same(e.from, e.to))
-                    {
-                        uft.union_tree(e.from, e.to);
-                        cost += e.cost;
-                    }
-                    else
-                    {
-                        is_spine_tree = false;
-                        break;
-                    }
-                }
-            }
-            if (is_spine_tree)
-            {
-                cost_counts[cost]++;
-            }
-        } while (std::next_permutation(v.begin(), v.end()));
-
-        for (auto &p : cost_counts)
-        {
-            kth_costs.push_back(p);
         }
-        sort(kth_costs.begin(), kth_costs.end(), greater<pair<ll, ll>>());
-        return 0;
+
+        ll current_node_distance = query.distance(node->p);
+
+        if (current_node_distance < *minDistance)
+        {
+            *minDistance = current_node_distance;
+            nearestNode = node;
+        }
+
+        const int axis = node->axis;
+        const int containsInLeft = query.position[axis] < node->p.position[axis];
+
+        if (containsInLeft)
+        {
+            nnSearchRecursive(query, node->left, nearestNode, minDistance);
+        }
+        else
+        {
+            nnSearchRecursive(query, node->right, nearestNode, minDistance);
+        }
+
+        const double other_side_minimum = fabs(query.position[axis] - node->p.position[axis]);
+        if (other_side_minimum < *minDistance)
+        {
+            if (containsInLeft)
+            {
+                nnSearchRecursive(query, node->right, nearestNode, minDistance);
+            }
+            else
+            {
+                nnSearchRecursive(query, node->left, nearestNode, minDistance);
+            }
+        }
+    }
+
+    void show()
+    {
+        if (root != nullptr)
+        {
+            show(root);
+        }
+    }
+    void show(Node *node)
+    {
+        cout << "depth:" << node->depth << " position:" << node->p.position[0] << " " << node->p.position[1] << endl;
+        if (node->left != nullptr)
+        {
+            show(node->left);
+        }
+        if (node->right != nullptr)
+        {
+            show(node->right);
+        }
     }
 };
 
-struct value
-{
-    ll i, j, cost, count;
-};
 int main()
 {
     // 整数の入力
-    ll A, T, k, M;
-    vector<MST> cities;
-    ll total = 0;
-    cin >> A >> T >> k;
-    for (int i = 0; i < A; i++)
+    int N, M;
+    vector<Point> friends;
+    vector<Point> spies;
+    vector<edge<int>> edges;
+    cin >> N;
+    for (int i = 0; i < N; i++)
     {
-        ll N;
-        cin >> N;
-        MST c;
-        for (int j = 0; j < N; j++)
-        {
-            ll town;
-            cin >> town;
-            c.add_vertical(town);
-        }
-        cities.push_back(c);
-    }
-
-    for (auto &c : cities)
-    {
-        sort(c.verticals.begin(), c.verticals.end());
+        Point p;
+        p.index = i;
+        int x, y;
+        scanf("%d", &x);
+        scanf("%d", &y);
+        // cin >> x >> y;
+        p.position.push_back(x);
+        p.position.push_back(y);
+        friends.push_back(p);
     }
 
     cin >> M;
     for (int i = 0; i < M; i++)
     {
-        edge e;
-        cin >> e.from >> e.to >> e.cost;
-        total += e.cost;
-        for (auto &c : cities)
+        Point p;
+        p.index = i;
+        int x, y;
+        scanf("%d", &x);
+        scanf("%d", &y);
+        // cin >> x >> y;
+        p.position.push_back(x);
+        p.position.push_back(y);
+        spies.push_back(p);
+    }
+
+    KDTree kdt(spies);
+    MinimumSpanningTreeArborescence<int> msta(N+1);
+    for (int i = 0; i < N; i++)
+    {
+        msta.G[i][N] = 1;
+        Point *nearest_spy = kdt.nnSearch(friends[i]);
+        ll min_distance;
+        if (nearest_spy)
         {
-            if (c.contains_vertical(e.from) && c.contains_vertical(e.to))
+            min_distance = friends[i].distance(*nearest_spy);
+        }
+        else
+        {
+            min_distance = (1LL << 62) - 1;
+        }
+
+        for (int j = 0; j < N; j++)
+        {
+            if (i == j){
+                continue;
+            }
+            ll distance = friends[i].distance(friends[j]);
+            if (distance < min_distance)
             {
-                c.edges.push_back(e);
-                break;
+                msta.G[j][i] = 0;
             }
         }
     }
 
-    for (auto &c : cities)
-    {
-        c.solve_kth();
-    }
 
-    vector<pair<ll, ll>> costs_count;
-    auto compare = [](value a, value b) {
-        return a.cost < b.cost;
-    };
-    costs_count.push_back(make_pair(0, 1));
-    for (auto &city : cities)
-    {
-        ll total_count = 0;
-        map<ll, ll> new_costs;
-        value first_v = {0, 0, costs_count[0].first + city.kth_costs[0].first, min(costs_count[0].second * city.kth_costs[0].second, k)};
-        priority_queue<value,
-                       std::vector<value>,
-                       decltype(compare)>
-            que(compare);
-        que.push(first_v);
-        set<pair<ll, ll>> pushed;
-        pushed.insert(make_pair(0, 0));
-        while (!que.empty() && total_count < k)
-        {
-            value v = que.top();
-            total_count += v.count;
-            que.pop();
-            pair<ll, ll> p1 = make_pair(v.i + 1, v.j);
-            if (v.i + 1 < costs_count.size() && pushed.find(p1) == pushed.end())
-            {
-                pushed.insert(p1);
-                que.push({v.i + 1, v.j, costs_count[v.i + 1].first + city.kth_costs[v.j].first, min(costs_count[v.i + 1].second * city.kth_costs[v.j].second, k)});
-            }
-
-            pair<ll, ll> p2 = make_pair(v.i, v.j + 1);
-            if (v.j + 1 < city.kth_costs.size() && pushed.find(p2) == pushed.end())
-            {
-                pushed.insert(p2);
-                que.push({v.i, v.j + 1, costs_count[v.i].first + city.kth_costs[v.j + 1].first, min(costs_count[v.i].second * city.kth_costs[v.j + 1].second, k)});
-            }
-            new_costs[v.cost] += v.count;
-        }
-        costs_count.clear();
-        for (auto &a : new_costs)
-        {
-            costs_count.push_back(a);
-        }
-        sort(costs_count.begin(), costs_count.end(), greater<pair<ll, ll>>());
-    }
-
-    // cout << "size" << costs.size() << endl;
-    // for(auto a :costs){
-    //     cout << a << endl;
-    // }
-
-    ll total_count = 0;
-    for (auto a : costs_count)
-    {
-        total_count += a.second;
-        if (total_count >= k)
-        {
-            cout << total - a.first << endl;
-            return 0;
-        }
-    }
-    cout << -1 << endl;
-
+    // cout << "sss" << endl;
+    std::cout << msta.build(N) << endl;
     return 0;
 }

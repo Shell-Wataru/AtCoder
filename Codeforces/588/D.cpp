@@ -15,70 +15,47 @@ ll BASE_NUM = 998244353;
 int main()
 {
     // 整数の入力
-    long long N, first_questions, second_questions, diff;
-    diff = 0;
-    first_questions = 0;
-    second_questions = 0;
-    string s;
+    long long N;
+    vector<ll> A;
+    vector<ll> B;
+    set<ll> duplicates;
+    map<ll,ll> values;
+
     cin >> N;
-    cin >> s;
-    for (int i = 0; i < N / 2; i++)
+    for (int i = 0; i < N; i++)
     {
-        if (s[i] == '?')
-        {
-            first_questions++;
+        ll a;
+        cin >> a;
+        A.push_back(a);
+    }
+    for (int i = 0; i < N; i++)
+    {
+        ll b;
+        cin >> b;
+        B.push_back(b);
+    }
+
+    // cout << "---" << endl;
+    for(int i = 0;i< N;i++){
+        if(values.find(A[i]) != values.end()){
+            duplicates.insert(A[i]);
         }
-        else
-        {
-            diff += s[i] - '0';
+        values[A[i]] =  values[A[i]] + B[i];
+    }
+
+    // cout << "---" << endl;
+    ll total = 0;
+    for(auto v:values){
+        ll a = v.first;
+        ll b = v.second;
+        for(auto d: duplicates){
+            if ((d | a) == d){
+                total += b;
+                break;
+            }
         }
     }
 
-    for (int i = N / 2; i < N; i++)
-    {
-        if (s[i] == '?')
-        {
-            second_questions++;
-        }
-        else
-        {
-            diff -= s[i] - '0';
-        }
-    }
-
-    ll questions_diff = first_questions - second_questions;
-    if (questions_diff == 0)
-    {
-        if (diff == 0)
-        {
-            cout << "Bicarp" << endl;
-        }
-        else
-        {
-            cout << "Monocarp" << endl;
-        }
-    }
-    else
-    {
-        if (questions_diff % 2 == 1)
-        {
-            cout << "Monocarp" << endl;
-        }
-        else
-        {
-            if (questions_diff > 0 && diff == -9 * questions_diff / 2)
-            {
-                cout << "Bicarp" << endl;
-            }
-            else if (questions_diff < 0 && diff == -9 * questions_diff / 2)
-            {
-                cout << "Bicarp" << endl;
-            }
-            else
-            {
-                cout << "Monocarp" << endl;
-            }
-        }
-    }
-    return 0;
+    cout << total << endl;
+   return 0;
 }
