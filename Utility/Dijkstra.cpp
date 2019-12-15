@@ -7,96 +7,42 @@
 #include <map>
 #include <queue>
 using namespace std;
+using ll = long long;
 
 const int NONE = -1;
 
-struct S
-{
-    long long node, cost, prev;
-    S(long long n, long long c, long long p) : node(n), cost(c), prev(p) {}
-    bool operator>(const S &s) const
-    {
-        return cost > s.cost;
-    }
-};
-
-class G
-{
-    long long n;
-    vector<map<long long, long long> > cost;
-
-  public:
-    vector<long long> minc;
-    vector<long long> prev;
-
-    G(long long n, vector<map<long long, long long> > cost) : n(n), cost(cost), minc(n, NONE), prev(n) {}
-
-    void dijkstra(long long start)
-    {
-        minc.assign(n, NONE);
-        priority_queue<S, vector<S>, greater<S> > pq;
-        pq.push(S(start, 0, NONE));
-        while (!pq.empty())
-        {
-            S s = pq.top();
-            pq.pop();
-            if (minc[s.node] != NONE)
-            {
-                continue;
-            }
-            minc[s.node] = s.cost;
-            prev[s.node] = s.prev;
-            for (auto itr = cost[s.node].begin(); itr != cost[s.node].end(); ++itr)
-            {
-                pq.push(S(itr->first, s.cost + itr->second, s.node));
-            }
-        }
-    }
-
-    void input();
-    void output()
-    {
-        for (int i = 0; i < n; i++)
-        {
-            cout << i << ":" << minc[i] << endl;
-        }
-    };
-};
-
-//double 版
-const int NONE = -1;
-
+template< typename T >
 struct S
 {
     long long node, prev;
-    double cost;
-
-    S(long long n, double c, long long p) : node(n), cost(c), prev(p) {}
+    T cost;
+    S(long long n, T c, long long p) : node(n), cost(c), prev(p) {}
     bool operator>(const S &s) const
     {
         return cost > s.cost;
     }
 };
 
-class G
+template< typename T >
+class Dijkstra
 {
     long long n;
-    vector<map<long long, double> > cost;
+    vector<map<long long, T> > G;
 
   public:
-    vector<double> minc;
+    vector<T> minc;
     vector<long long> prev;
 
-    G(long long n, vector<map<long long, double> > cost) : n(n), cost(cost), minc(n, NONE), prev(n) {}
+    Dijkstra(vector<map<long long, T> > &G) : n(G.size()), G(G), minc(n, NONE), prev(G.size()) {}
 
-    void dijkstra(long long start)
+    void solve(long long start)
     {
         minc.assign(n, NONE);
-        priority_queue<S, vector<S>, greater<S> > pq;
-        pq.push(S(start, 0, NONE));
+        priority_queue<S<T>, vector<S<T>>, greater<S<T>> > pq;
+        pq.push(S<T>(start, 0, NONE));
         while (!pq.empty())
         {
-            S s = pq.top();
+            S<T> s = pq.top();
             pq.pop();
             if (minc[s.node] != NONE)
             {
@@ -104,19 +50,42 @@ class G
             }
             minc[s.node] = s.cost;
             prev[s.node] = s.prev;
-            for (auto itr = cost[s.node].begin(); itr != cost[s.node].end(); ++itr)
+            for (auto itr = G[s.node].begin(); itr != G[s.node].end(); ++itr)
             {
-                pq.push(S(itr->first, s.cost + itr->second, s.node));
+                pq.push(S<T>(itr->first, s.cost + itr->second, s.node));
             }
         }
     }
 
-    void input();
-    void output()
+    void print()
     {
         for (int i = 0; i < n; i++)
         {
             cout << i << ":" << minc[i] << endl;
         }
     };
+
+    vector<ll> path(ll last)
+    {
+        vector<ll> stack;
+        stack.push_back(last);
+        while(prev[stack.back()] != NONE){
+            stack.push_back(prev[stack.back()]);
+        }
+        reverse(stack.begin(),stack.end());
+        return stack;
+    };
 };
+
+int main(){
+    vector<map<ll,ll>> G{
+        {{1, 1},{2, 4},{3, 16}},
+        {{2, 1},{3, 4}},
+        {{3, 1}},
+        {},
+    };
+    Dijkstra<ll> d(G);
+    d.solve(0);
+    d.print();
+    return 0;
+}

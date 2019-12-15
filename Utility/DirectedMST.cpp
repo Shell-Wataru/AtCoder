@@ -9,6 +9,7 @@
 #include <stack>
 using namespace std;
 using ll = long long;
+// skew heapが定数倍で遅いのでスパースな時だけ利用する
 // https://ei1333.github.io/luzhiled/snippets/graph/chu-liu-edmond.html
 template< typename T >
 struct edge {

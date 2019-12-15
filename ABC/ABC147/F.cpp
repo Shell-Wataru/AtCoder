@@ -17,30 +17,29 @@ using ll = long long;
 namespace mp = boost::multiprecision;
 ll BASE_NUM = 1000000007;
 
+long long gcd(long long a, long long b){
+    if (a%b == 0){
+        return b;
+    }else{
+        return gcd(b,a%b);
+    }
+}
 
 int main()
 {
     // 整数の入力
-    ll N;
-    cin >> N;
-    map<ll,ll>  cards_counts;
-    for(int i = 0;i<N;i++){
-        ll a;
-        cin >> a;
-        cards_counts[a]++;
-    }
-    vector<ll> uniques;
-    for(auto p:cards_counts){
-        uniques.push_back(p.second);
-    }
-    sort(uniques.begin(),uniques.end(),greater<ll>());
-    ll nokori = N;
-    for(int i = 1;i<=N;i++){
-        cout << min(N/i,nokori) << endl;
-        if (i <= uniques.size()){
-            nokori -= uniques[i-1];
-        }
+    ll N,X,D;
+    cin >> N >> X >> D;
+    ll greatest_common = gcd(X,D);
+    ll smallest = X * D/gcd(X,D);
+    ll x_count = smallest/ X;
+    ll d_count  = smallest/D;
+    ll counts = 0;
+
+    for(int i = 0;i <= N;i++){
+        ll min_d = i * (i - 1)/2;
+        ll max_d = i * (2 * N - i + 1)/2;
 
     }
- return 0;
+    return 0;
 }

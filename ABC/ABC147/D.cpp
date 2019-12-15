@@ -16,14 +16,20 @@ using namespace std;
 using ll = long long;
 namespace mp = boost::multiprecision;
 
-ll BASE_NUM = 998244353;
+ll BASE_NUM = 1000000007;
 ll my_pow(ll x,ll y){
     if (y == 0){
         return 1LL;
     }else if(y == 1){
         return x;
     }else{
-        return (my_pow(x,y/2) % BASE_NUM) * (my_pow(x,(y+1)/2) % BASE_NUM) % BASE_NUM;
+        ll y_2 =my_pow(x,y/2) % BASE_NUM;
+        ll yy = (y_2 * y_2) % BASE_NUM;
+        if (y % 2 == 0){
+            return yy;
+        }else{
+            return (yy * x) % BASE_NUM;
+        }
     }
 }
 
@@ -43,16 +49,19 @@ int main()
         ll ones = 0;
         ll zeros = 0;
         for(int j = 0;j<N;j++){
-            if (A[j] & (1<<i)){
+            if (A[j] & (1LL<<i)){
                 ones++;
             }else{
                 zeros++;
             }
         }
-        value = value +
+        // cout << ones << " " << zeros << endl;
+        ll patterns = ones * zeros % BASE_NUM;
+        ll current_sum = patterns * my_pow(2,i) % BASE_NUM;
+        value = (value + current_sum) % BASE_NUM;
     }
 
-    cout << total << endl;
+    cout << value << endl;
 
     return 0;
 }

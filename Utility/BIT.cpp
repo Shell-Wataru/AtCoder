@@ -9,23 +9,6 @@
 using namespace std;
 using ll = long long;
 
-// 1 indexed
-void addBIT(long long *BIT, int N, int index, long long v)
-{
-    int i;
-    for (i = index; i < N; i += i & -i)
-        BIT[i] += v;
-}
-
-long long sumBIT(long long *BIT, int index)
-{
-    long long retValue = 0;
-    int i;
-    for (i = index; i > 0; i -= i & -i)
-        retValue += BIT[i];
-    return retValue;
-}
-
 //zero indexed and vector
 class BIT
 {
