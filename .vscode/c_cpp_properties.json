@@ -12,9 +12,9 @@
                 "/Library/Frameworks"
             ],
             "compilerPath": "/usr/bin/g++",
-            "compilerArgs": ["-std=gnu++1y"],
-            "cStandard": "c11",
-            "cppStandard": "c++14",
+            "compilerArgs": ["-std=gnu++17"],
+            "cStandard": "c18",
+            "cppStandard": "c++17",
             "intelliSenseMode": "gcc-x64"
         }
     ],

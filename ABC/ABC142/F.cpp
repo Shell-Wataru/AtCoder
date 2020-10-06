@@ -155,7 +155,6 @@ int main()
     auto scc_result = scc.scc();
     for(auto sc: scc_result){
         if (sc.size() > 1){
-
             return 0;
         }
     }

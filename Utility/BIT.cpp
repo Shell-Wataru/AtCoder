@@ -10,12 +10,13 @@ using namespace std;
 using ll = long long;
 
 //zero indexed and vector
+template< typename T>
 class BIT
 {
 public:
-    vector<ll> data;
+    vector<T> data;
     BIT(long long n) : data(n) {}
-    void add(int index, long long v)
+    void add(int index, T v)
     {
         int N = data.size();
         for (int i = index; i < N; i |= i + 1)
@@ -26,9 +27,8 @@ public:
 
     long long sum(int index)
     {
-        long long retValue = 0;
-        int i;
-        for (i = index; i >= 0; i = (i & (i + 1)) - 1)
+        T retValue = 0;
+        for (int i = index; i >= 0; i = (i & (i + 1)) - 1)
         {
             retValue += data[i];
         }
@@ -43,7 +43,7 @@ public:
 };
 
 int main(){
-    BIT bit(10);
+    BIT<ll> bit(10);
     for(int i = 0;i<10;i++){
         bit.add(i,i);
     }

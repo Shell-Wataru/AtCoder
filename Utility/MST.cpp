@@ -9,59 +9,34 @@
 using namespace std;
 using ll = long long;
 
-//mapで持っているので注意
-class UnionFindTree
-{
-    map<ll, ll> union_tree_data;
+struct UnionFind {
+  vector< int > data;
 
-public:
-    UnionFindTree() {}
+  UnionFind(int sz) {
+    data.assign(sz, -1);
+  }
 
-    UnionFindTree(vector<ll> verticals)
-    {
-        for (auto v : verticals)
-        {
-            union_tree_data[v] = v;
-        }
-    }
+  bool unite(int x, int y) {
+    x = find(x), y = find(y);
+    if(x == y) return (false);
+    if(data[x] > data[y]) swap(x, y);
+    data[x] += data[y];
+    data[y] = x;
+    return (true);
+  }
 
-    void add_vertical(ll v)
-    {
-        union_tree_data[v] = v;
-    }
+  bool same(int x, int y) {
+    x = find(x), y = find(y);
+    return x == y;
+  }
+  int find(int k) {
+    if(data[k] < 0) return (k);
+    return (data[k] = find(data[k]));
+  }
 
-    void reset()
-    {
-        for (auto &pair : union_tree_data)
-        {
-            pair.second = pair.first;
-        }
-    }
-    long long find(long long N)
-    {
-        if (union_tree_data[N] == N)
-        {
-            return N;
-        }
-        else
-        {
-            return union_tree_data[N] = find(union_tree_data[N]);
-        }
-    }
-
-    bool same(long long x, long long y)
-    {
-        return find(x) == find(y);
-    }
-
-    void union_tree(long long x, long long y)
-    {
-        x = find(x);
-        y = find(y);
-        if (x == y)
-            return;
-        union_tree_data[x] = y;
-    }
+  int size(int k) {
+    return (-data[find(k)]);
+  }
 };
 
 class edge
@@ -77,19 +52,18 @@ public:
     {
         return cost > another.cost;
     };
-
 };
 
 class MST
 {
-    UnionFindTree uft;
+    UnionFind uft;
 
 public:
-    priority_queue<edge,vector<edge>,greater<edge>> que;
+    priority_queue<edge, vector<edge>, greater<edge>> que;
     vector<edge> result;
     ll cost = 0;
 
-    MST(vector<ll> &nodes, vector<edge> &edges) : uft(nodes)
+    MST(ll node_size, vector<edge> &edges) : uft(node_size)
     {
         for (auto e : edges)
         {
@@ -99,10 +73,11 @@ public:
         {
             edge e;
             e = que.top();
-            if (!uft.same(e.from,e.to)){
-                uft.union_tree(e.from,e.to);
+            if (!uft.same(e.from, e.to))
+            {
+                uft.unite(e.from, e.to);
                 result.push_back(e);
-                cost +=  e.cost;
+                cost += e.cost;
                 cout << que.top().from << que.top().to << que.top().cost << std::endl;
             }
             que.pop();
@@ -116,12 +91,12 @@ int main()
     vector<ll> nodes{
         1, 2, 3, 4};
     vector<edge> edges{
+        {0, 1, 1},
+        {0, 2, 1},
+        {0, 3, 0},
         {1, 2, 1},
-        {1, 3, 1},
-        {1, 4, 0},
-        {2, 3, 1},
-        {2, 4, 0},
-        {3, 4, 0},
+        {1, 3, 0},
+        {2, 3, 0},
     };
-    MST(nodes, edges);
+    MST(4, edges);
 }
