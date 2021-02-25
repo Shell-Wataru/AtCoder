@@ -3,16 +3,15 @@
 #include <vector>
 #include <deque>
 #include <queue>
+#include <set>
 #include <map>
 #include <iomanip>
 #include <cmath>
-#include <set>
 #include <numeric>
-#include <boost/multiprecision/cpp_int.hpp>
+
 using namespace std;
 using ll = long long;
-namespace mp = boost::multiprecision;
-double MAX_VALUE = 1000001;
+const ll BASE_NUM = 1000000007;
 
 // https://ei1333.github.io/luzhiled/snippets/structure/segment-tree.html
 // を元にfunctionを使わないように改変
@@ -136,36 +135,59 @@ struct monoid_max
   }
 };
 
-struct monoid_sum
+int solve()
 {
-  using T = ll;
-  static T op(T l, T r) { return l+r; }
-  static const T id() {
+    ll n;
+    cin >> n;
+    vector<ll> a(n);
+    vector<ll> b(n);
+    SegmentTree<monoid_min> seg_even_min((n+1)/2);
+    SegmentTree<monoid_min> seg_odd_min(n/2);
+    for (size_t i = 0; i < n; i++)
+    {
+        scanf("%lld",&a[i]);
+        if (i == 0){
+            b[i] = a[i];
+        }else{
+            b[i] = a[i] - b[i-1];
+        }
+
+        if (i%2 == 0){
+            seg_even_min.set(i/2,b[i]);
+        }else{
+            seg_odd_min.set(i/2,b[i]);
+        }
+    }
+    seg_even_min.build();
+    seg_odd_min.build();
+    if (b[n-1] == 0){
+        if (seg_even_min.query(0,(n+1)/2) >= 0 && seg_odd_min.query(0,n/2) >= 0){
+            cout << "YES" << endl;
+        }else{
+            cout << "NO" << endl;
+        }
+    }else{
+        bool can_make = false;
+        for(int i = 0;i < n-1;i++){
+            if (i % 2 == 0){
+                if (b[i] + a[i+1] - a[i] >= 0 && seg_even_min.query(i,n/2) + )
+            }else{
+
+            }
+        }
+    }
+
     return 0;
-  }
-
-  static const bool check(T &current, T &x) {
-    return current >= x;
-  }
-};
-
-int main() {
-  // vector<int> a{1,2,3,4,5,6,7,8};
-  vector<int> a{8,7,6,5,4,3,2,1};
-  SegmentTree< monoid_min > seg(a.size());
-  for(int i = 0;i < a.size();i++){
-      seg.set(i, a[i]);
-  }
-  seg.build();
-  // cout << seg.query(0,a.size()) << endl;
-  // seg.update(0,10);
-  // cout << seg.query(0,a.size()) << endl;
-  // seg.update(0,1);
-  // cout << seg.find_first(0,4) << endl;
-  // cout << seg.find_first(1,4) << endl;
-  cout << seg.find_last(0,9) << endl;
-  cout << seg.find_last(0,8) << endl;
-  cout << seg.find_last(0,7) << endl;
-  // cout << seg.find_last(a.size(),4) << endl;
-  // cout << seg.find_last(a.size()-1,4) << endl;
+}
+int main()
+{
+    // 整数の入力
+    ll t;
+    cin >> t;
+    for (size_t i = 0; i < t; i++)
+    {
+    solve();
+    }
+    cout << flush;
+    return 0;
 }

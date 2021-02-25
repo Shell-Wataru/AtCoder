@@ -3,16 +3,17 @@
 #include <vector>
 #include <deque>
 #include <queue>
-#include <map>
-#include <iomanip>
-#include <cmath>
 #include <set>
-#include <numeric>
+#include <map>
+#include <limits>
+#include <cmath>
+#include <iomanip>
+#include <functional>
+#include <random>
 #include <boost/multiprecision/cpp_int.hpp>
+
 using namespace std;
 using ll = long long;
-namespace mp = boost::multiprecision;
-double MAX_VALUE = 1000001;
 
 // https://ei1333.github.io/luzhiled/snippets/structure/segment-tree.html
 // を元にfunctionを使わないように改変
@@ -91,7 +92,7 @@ struct SegmentTree {
     return -1;
   }
 
-  // 条件を満たす[a,b)で最もaが後方にあるもの
+  // 条件を満たす[a,b]で最もaが後方にあるもの
   int find_last(int b, T x) {
     T R = id;
     if(b >= sz) {
@@ -110,19 +111,6 @@ struct SegmentTree {
   }
 };
 
-struct monoid_min
-{
-  using T = ll;
-  static T op(T l, T r) { return min(l,r); }
-  static const T id() {
-    return INT_MAX;
-  }
-
-  static const bool check(T &current, T &x) {
-    return current <= x;
-  }
-};
-
 struct monoid_max
 {
   using T = ll;
@@ -132,40 +120,42 @@ struct monoid_max
   }
 
   static const bool check(T &current, T &x) {
-    return current >= x;
+    return current > x;
   }
 };
 
-struct monoid_sum
+int main()
 {
-  using T = ll;
-  static T op(T l, T r) { return l+r; }
-  static const T id() {
+    // 整数の入力
+    ll N;
+    cin >> N;
+    vector<ll> H(N);
+    SegmentTree<monoid_max> seg(N);
+    for(int i = 0;i < N;i++){
+        cin >> H[i];
+        seg.set(i,H[i]);
+    }
+    seg.build();
+    for(int i = 0;i < N;i++){
+        ll from = seg.find_last(i,H[i]);
+        ll to = seg.find_first(i+1,H[i]);
+        // cout << "--" << endl;
+        // cout << from << endl;
+        // cout << to << endl;
+        if (from == -1){
+            from = 0;
+        }else{
+            from += 1;
+        }
+        if (to == -1){
+            to = N-1;
+        }else{
+            to = to - 1;
+        }
+        // cout << "==" << endl;
+        // cout << from << endl;
+        // cout << to << endl;
+        cout << to - from << endl;
+    }
     return 0;
-  }
-
-  static const bool check(T &current, T &x) {
-    return current >= x;
-  }
-};
-
-int main() {
-  // vector<int> a{1,2,3,4,5,6,7,8};
-  vector<int> a{8,7,6,5,4,3,2,1};
-  SegmentTree< monoid_min > seg(a.size());
-  for(int i = 0;i < a.size();i++){
-      seg.set(i, a[i]);
-  }
-  seg.build();
-  // cout << seg.query(0,a.size()) << endl;
-  // seg.update(0,10);
-  // cout << seg.query(0,a.size()) << endl;
-  // seg.update(0,1);
-  // cout << seg.find_first(0,4) << endl;
-  // cout << seg.find_first(1,4) << endl;
-  cout << seg.find_last(0,9) << endl;
-  cout << seg.find_last(0,8) << endl;
-  cout << seg.find_last(0,7) << endl;
-  // cout << seg.find_last(a.size(),4) << endl;
-  // cout << seg.find_last(a.size()-1,4) << endl;
 }

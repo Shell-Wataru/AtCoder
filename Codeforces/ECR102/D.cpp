@@ -3,16 +3,13 @@
 #include <vector>
 #include <deque>
 #include <queue>
+#include <set>
 #include <map>
 #include <iomanip>
 #include <cmath>
-#include <set>
-#include <numeric>
-#include <boost/multiprecision/cpp_int.hpp>
 using namespace std;
 using ll = long long;
-namespace mp = boost::multiprecision;
-double MAX_VALUE = 1000001;
+ll BASE_NUM = 998244353;
 
 // https://ei1333.github.io/luzhiled/snippets/structure/segment-tree.html
 // を元にfunctionを使わないように改変
@@ -149,23 +146,64 @@ struct monoid_sum
   }
 };
 
-int main() {
-  // vector<int> a{1,2,3,4,5,6,7,8};
-  vector<int> a{8,7,6,5,4,3,2,1};
-  SegmentTree< monoid_min > seg(a.size());
-  for(int i = 0;i < a.size();i++){
-      seg.set(i, a[i]);
+int solve()
+{
+  ll n,m;
+  scanf("%lld",&n);
+  scanf("%lld",&m);
+  SegmentTree<monoid_max> seg_max(n+1);
+  SegmentTree<monoid_min> seg_min(n+1);
+  SegmentTree<monoid_sum> seg_sum(n+1);
+  string s;
+  cin >> s;
+  ll x = 0;
+  seg_max.set(0,0);
+  seg_min.set(0,0);
+  seg_sum.set(0,0);
+  for(int i = 0;i < n;i++){
+    if (s[i] == '+'){
+      x++;
+      seg_sum.set(i+1,1);
+    }else{
+      x--;
+      seg_sum.set(i+1,-1);
+    }
+    seg_max.set(i+1,x);
+    seg_min.set(i+1,x);
   }
-  seg.build();
-  // cout << seg.query(0,a.size()) << endl;
-  // seg.update(0,10);
-  // cout << seg.query(0,a.size()) << endl;
-  // seg.update(0,1);
-  // cout << seg.find_first(0,4) << endl;
-  // cout << seg.find_first(1,4) << endl;
-  cout << seg.find_last(0,9) << endl;
-  cout << seg.find_last(0,8) << endl;
-  cout << seg.find_last(0,7) << endl;
-  // cout << seg.find_last(a.size(),4) << endl;
-  // cout << seg.find_last(a.size()-1,4) << endl;
+  seg_max.build();
+  seg_min.build();
+  seg_sum.build();
+  for(int i = 0;i < m;i++){
+    ll l,r;
+    scanf("%lld",&l);
+    scanf("%lld",&r);
+    r++;
+    ll first_area_max = seg_max.query(0,l);
+    ll first_area_min = seg_min.query(0,l);
+    ll center_area_sum = seg_sum.query(l,r);
+    ll second_area_max = seg_max.query(r,n+1) - center_area_sum;
+    ll second_area_min = seg_min.query(r,n+1) - center_area_sum;
+    ll total_max = max(first_area_max,second_area_max);
+    ll total_min = min(first_area_min,second_area_min);
+    // cout << "fM:" << first_area_max << "\n";
+    // cout << "fm:" << first_area_min << "\n";
+    // cout << "cs:" << center_area_sum << "\n";
+    // cout << "sM:" << second_area_max << "\n";
+    // cout << "sm:" << second_area_min << "\n";
+    cout << max(total_max - total_min + 1,1ll) << "\n";
+  }
+  return 0;
+}
+
+int main()
+{
+  int t;
+  cin >> t;
+  for (size_t i = 0; i < t; i++)
+  {
+    solve();
+  }
+  cout << flush;
+  return 0;
 }

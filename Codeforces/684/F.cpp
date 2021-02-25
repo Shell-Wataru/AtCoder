@@ -3,16 +3,14 @@
 #include <vector>
 #include <deque>
 #include <queue>
+#include <set>
 #include <map>
 #include <iomanip>
 #include <cmath>
-#include <set>
-#include <numeric>
-#include <boost/multiprecision/cpp_int.hpp>
+
 using namespace std;
 using ll = long long;
-namespace mp = boost::multiprecision;
-double MAX_VALUE = 1000001;
+
 
 // https://ei1333.github.io/luzhiled/snippets/structure/segment-tree.html
 // を元にfunctionを使わないように改変
@@ -23,13 +21,22 @@ struct SegmentTree {
   using T = typename Monoid::T;
 
   int sz;
+  int depth;
   vector< T > seg;
+  vector<bool> swaps;
+  vector<bool> reverses;
   const T id = Monoid::id();
 
   SegmentTree(int n) {
     sz = 1;
-    while(sz < n) sz <<= 1;
+    depth = 1;
+    while(sz < n) {
+        sz <<= 1;
+        depth++;
+    }
     seg.assign(2 * sz, id);
+    swaps.assign(depth,false)
+    reverses.assign(depth,false)
   }
 
   void set(int k, const T &x) {
@@ -43,6 +50,17 @@ struct SegmentTree {
   }
 
   void update(int k, const T &x) {
+    for(int i = 0;i < depth;i++){
+        ll base_size = 1<<(depth - i);
+        if (swaps[i] && reverses[i]){
+
+        }else if (swaps[i] && !reverses[i]){
+        }else if (!swaps[i] && reverses[i]){
+            k = 1<<(depth - i)
+        }else if (!swaps[i] && !reverses[i]){
+            continue
+        }
+    }
     k += sz;
     seg[k] = x;
     while(k >>= 1) {
@@ -72,7 +90,6 @@ struct SegmentTree {
     return a - sz;
   }
 
-  // 条件を満たす[a,b]で最もbが前方にあるもの
   int find_first(int a, T x) {
     T L = id;
     if(a <= 0) {
@@ -91,7 +108,6 @@ struct SegmentTree {
     return -1;
   }
 
-  // 条件を満たす[a,b)で最もaが後方にあるもの
   int find_last(int b, T x) {
     T R = id;
     if(b >= sz) {
@@ -123,49 +139,47 @@ struct monoid_min
   }
 };
 
-struct monoid_max
-{
-  using T = ll;
-  static T op(T l, T r) { return max(l,r); }
-  static const T id() {
-    return INT_MIN;
-  }
 
-  static const bool check(T &current, T &x) {
-    return current >= x;
-  }
-};
-
-struct monoid_sum
+int solve()
 {
-  using T = ll;
-  static T op(T l, T r) { return l+r; }
-  static const T id() {
+
+    ll N;
+    cin >> N;
+    vector<pair<ll,ll>> A(N);
+    for (size_t i = 0; i < N; i++)
+    {
+        scanf("%lld",&A[i].first);
+        scanf("%lld",&A[i].second);
+    }
+    ll count = 0;
+    sort(A.begin(),A.end(),[](pair<ll,ll> &l,pair<ll,ll> &r ){
+        if (l.first == r.first){
+            return l.second > r.second;
+        }else{
+            return l.first < r.first;
+        }
+    });
+    vector<pair<ll,ll>> s;
+    for(int i = 0;i < N;i++){
+        while(!s.empty() && s.back().second < A[i].first){
+            s.pop_back();
+        }
+        if (s.empty() || A[i].second <= s.back().second){
+            // cout << A[i].first << "~" <<A[i].second << endl;
+            count++;
+            s.push_back(A[i]);
+        }
+    }
+    cout << count << endl;
     return 0;
-  }
-
-  static const bool check(T &current, T &x) {
-    return current >= x;
-  }
-};
-
-int main() {
-  // vector<int> a{1,2,3,4,5,6,7,8};
-  vector<int> a{8,7,6,5,4,3,2,1};
-  SegmentTree< monoid_min > seg(a.size());
-  for(int i = 0;i < a.size();i++){
-      seg.set(i, a[i]);
-  }
-  seg.build();
-  // cout << seg.query(0,a.size()) << endl;
-  // seg.update(0,10);
-  // cout << seg.query(0,a.size()) << endl;
-  // seg.update(0,1);
-  // cout << seg.find_first(0,4) << endl;
-  // cout << seg.find_first(1,4) << endl;
-  cout << seg.find_last(0,9) << endl;
-  cout << seg.find_last(0,8) << endl;
-  cout << seg.find_last(0,7) << endl;
-  // cout << seg.find_last(a.size(),4) << endl;
-  // cout << seg.find_last(a.size()-1,4) << endl;
+}
+int main()
+{
+    int t;
+    cin >> t;
+    for (size_t i = 0; i < t; i++)
+    {
+        solve();
+    }
+    return 0;
 }

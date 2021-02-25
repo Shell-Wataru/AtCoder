@@ -17,73 +17,49 @@ ll BASE_NUM = 1000000007;
 int main()
 {
   // 整数の入力
-  ll N;
-  cin >> N;
-  vector<string> answer(N);
-  for (int i = 0; i < N; i++)
-  {
-    cin >> answer[i];
-  }
-
-  for(int i = 0; i< N;i++){
-    for(int j = i+1; j<N;j++){
-      for(int k = 0; k < N;k++){
-        for(int l = k+1; l < N;l++){
-          if (answer[i][k] == 'o' && answer[i][l] == 'o' && answer[j][k] == 'o' && answer[j][l] == 'o'){
-            cout << "found!!" << "(" << i << "," << k << ")" << "(" << j << "," << l << ")" << endl;
-            answer[i][k] = '!';
-            answer[i][l] = '!';
-            answer[j][k] = '!';
-            answer[j][l] = '!';
-            for(auto s: answer){
-              cout << s << endl;
-            }
-            return 0;
-          }
-        }
-      }
+  ll N = 13;
+  vector<vector<ll>> ans(N*N+N + 1,vector<ll>(N*N+N + 1,0));
+  ll P = 0;
+  vector<ll> Q(N);
+  iota(Q.begin(),Q.end(),1);
+  vector<vector<ll>> R(N,vector<ll>(N));
+  for(int i = 0;i < N;i++){
+    for (int j = 0; j < N; j++)
+    {
+      R[i][j] = N + 1 + N * i + j;
     }
   }
 
-  for(int i = 0; i< N;i++){
-    for(int j = 0; j<N;j++){
-      bool can_put = true;
-      int max_reach = 0;
-      if (answer[i][j] == 'o'){
-        continue;
-      }
-      for(int k = 0; k< N;k++){
-        if (i == k){
-          continue;
-        }
-        for(int l = 0; l<N;l++){
-          if (j == l){
-            continue;
-          }
-          if(answer[i][l] == 'o' && answer[k][j] == 'o' && answer[k][l] == 'o'){
-            can_put = false;
-          }
-        }
-      }
-      if (can_put){
-        answer[i][j] = '*';
-      }
+  ans[0][P] = 1;
+  for(int i = 0;i < N;i++){
+    ans[0][Q[i]] = 1;
+  }
+
+  for(int i = 0;i < N;i++){
+    ans[i+1][P] = 1;
+    for(int j = 0;j < N;j++){
+      ans[i+1][R[j][i]] = 1;
     }
   }
 
-  cout << N << endl;
-  // sort(answer.begin(),answer.end(),greater<string>());
-  for(auto s: answer){
-    cout << s << endl;
-  }
-  ll counter = 0;
-  for(int i = 0; i< N;i++){
-    for(int j = 0; j<N;j++){
-      if (answer[i][j] == 'o'){
-        counter++;
+  for(int r = 0;r < N;r++){
+    for(int c = 0;c < N;c++){
+      ans[N+1 + N*r + c][Q[c]] = 1;
+      for (int i = 0; i < N; i++)
+      {
+        ans[N+1 + N*r + c][R[(r + c*i) % N][i]] = 1;
       }
     }
   }
-  cout << counter << endl;
+  for(int i = 0;i< 150;i++){
+    for(int j = 0;j < 150;j++){
+      if (ans[i][j] == 1){
+        cout << 'O';
+      }else{
+        cout << '.';
+      }
+    }
+    cout << endl;
+  }
   return 0;
 }

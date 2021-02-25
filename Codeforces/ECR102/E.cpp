@@ -1,15 +1,54 @@
 #include <iostream>
-#include <iomanip>
 #include <algorithm>
 #include <vector>
 #include <deque>
-#include <cmath>
-#include <map>
 #include <queue>
+#include <set>
+#include <map>
+#include <iomanip>
+#include <cmath>
+
 using namespace std;
 using ll = long long;
 
+const long long BASE_NUM = 998244353;
+
 const int NONE = -1;
+
+struct my_distance{
+    ll cost,max_weight,min_weight;
+    bool operator>(const my_distance &d) const
+    {
+        if (cost != d.cost){
+            return cost > d.cost;
+        }else if (max_weight != d.max_weight){
+            return max_weight > d.max_weight;
+        }else{
+            return min_weight > d.min_weight;
+        }
+    }
+
+    my_distance operator+(const my_distance &d) const
+    {
+        ll new_cost = cost + d.cost;
+        ll new_max_weight = max_weight;
+        ll new_min_weight = min_weight;
+        if (max_weight < d.max_weight){
+            new_cost += max_weight;
+            new_max_weight = d.max_weight;
+        }
+
+        if (min_weight > d.min_weight){
+            new_cost -= min_weight;
+            new_min_weight = d.min_weight;
+        }
+
+        return my_distance({new_cost,new_max_weight,new_min_weight});
+    }
+    static const my_distance id() {
+        return {0,0,0};
+    }
+};
 
 template <typename T>
 struct S
@@ -78,15 +117,40 @@ public:
     };
 };
 
-int main(){
-    vector<vector<pair<ll,ll>>> G{
-        {{1, 1},{2, 4},{3, 16}},
-        {{2, 1},{3, 4}},
-        {{3, 1}},
-        {},
-    };
-    Dijkstra<ll> d(G);
+int solve()
+{
+
+    ll n, m;
+    cin >> n >> m;
+    vector<vector<pair<ll,my_distance>>> G(n);
+    for(int i = 0;i < m;i++){
+        ll u,v,c;
+        scanf("%lld",&u);
+        scanf("%lld",&v);
+        scanf("%lld",&c);
+        u--;
+        v--;
+        G[u].push_back({v,{c,c,c}});
+        G[v].push_back({u,{c,c,c}});
+    }
+    Dijkstra<my_distance> d(G);
     d.solve(0);
-    d.print();
+    for(int i = 1;i < n;i++){
+        if (i != 1){
+            cout << " ";
+        }
+        cout << d.minc[i].cost;
+    }
+    cout << endl;
+    return 0;
+}
+int main()
+{
+    // int t;
+    // cin >> t;
+    // for (size_t i = 0; i < t; i++)
+    // {
+    solve();
+    // }
     return 0;
 }

@@ -3,17 +3,19 @@
 #include <vector>
 #include <deque>
 #include <queue>
-#include <map>
-#include <iomanip>
-#include <cmath>
 #include <set>
-#include <numeric>
+#include <map>
+#include <limits>
+#include <cmath>
+#include <iomanip>
+#include <functional>
+#include <random>
 #include <boost/multiprecision/cpp_int.hpp>
+
 using namespace std;
 using ll = long long;
-namespace mp = boost::multiprecision;
-double MAX_VALUE = 1000001;
 
+double MAX_VALUE = 1000001;
 // https://ei1333.github.io/luzhiled/snippets/structure/segment-tree.html
 // を元にfunctionを使わないように改変
 // https://noshi91.hatenablog.com/
@@ -72,18 +74,18 @@ struct SegmentTree {
     return a - sz;
   }
 
-  // 条件を満たす[a,b]で最もbが前方にあるもの
+  // 条件を満たす[a,b)で最もbが前方にあるもの
   int find_first(int a, T x) {
     T L = id;
     if(a <= 0) {
-      if(Monoid::check(seg[1],x)) return find_subtree(1, x, L, false);
+      if(Monoid::check(seg[1],x)) return find_subtree(1, x, L, false) + 1;
       return -1;
     }
     int b = sz;
     for(a += sz, b += sz; a < b; a >>= 1, b >>= 1) {
       if(a & 1) {
         T nxt = Monoid::op(L, seg[a]);
-        if(Monoid::check(seg[a],x)) return find_subtree(a, x, L, false);
+        if(Monoid::check(seg[a],x)) return find_subtree(a, x, L, false) + 1;
         L = nxt;
         ++a;
       }
@@ -110,19 +112,6 @@ struct SegmentTree {
   }
 };
 
-struct monoid_min
-{
-  using T = ll;
-  static T op(T l, T r) { return min(l,r); }
-  static const T id() {
-    return INT_MAX;
-  }
-
-  static const bool check(T &current, T &x) {
-    return current <= x;
-  }
-};
-
 struct monoid_max
 {
   using T = ll;
@@ -132,40 +121,80 @@ struct monoid_max
   }
 
   static const bool check(T &current, T &x) {
-    return current >= x;
+    return current > x;
   }
 };
 
-struct monoid_sum
+int main()
 {
-  using T = ll;
-  static T op(T l, T r) { return l+r; }
-  static const T id() {
+    // 整数の入力
+    ll N;
+    cin >> N;
+    vector<ll> P(N);
+    SegmentTree<monoid_max> seg(N);
+    for (int i = 0; i < N; i++)
+    {
+        cin >> P[i];
+        seg.set(i,P[i]);
+    }
+    seg.build();
+    ll ans = 0;
+    for(int i = 0; i < N;i++){
+        ll l1,l2,r1,r2;
+        l1 = seg.find_last(i,P[i]);
+        r1 = seg.find_first(i,P[i]);
+        if (r1 != -1){
+            r1--;
+        }
+        if (l1 != -1){
+            l2 = seg.find_last(l1,P[i]);
+        }
+        if (r1 != -1){
+            r2 = seg.find_first(r1+1,P[i]);
+            if (r2 != -1){
+                r2--;
+            }
+        }
+        ll il1_range,l1l2_range,ir1_range,r1r2_range;
+        if (l1 != -1){
+            il1_range = i - l1;
+        }else{
+            il1_range = i + 1;
+        }
+        if (r1 != -1){
+            ir1_range = r1 - i;
+        }else{
+            ir1_range = N - i;
+        }
+
+        if (l1 == -1){
+            l1l2_range = 0;
+        }else if (l2 == -1){
+            l1l2_range = l1 + 1;
+        }else{
+            l1l2_range = l1 - l2;
+        }
+
+        if (r1 == -1){
+            r1r2_range = 0;
+        }else if (r2 == -1){
+            r1r2_range = N - r1;
+        }else{
+            r1r2_range = r2 - r1;
+        }
+        // cout << P[i] << endl;
+        // cout << "l1:" << l1 << endl;
+        // cout << "l2:" << l2 << endl;
+        // cout << "r1:" << r1 << endl;
+        // cout << "r2:" << r2 << endl;
+
+        // cout << "il1_range:" << il1_range << endl;
+        // cout << "ir1_range:" << ir1_range << endl;
+        // cout << "l1l2_range:" << l1l2_range << endl;
+        // cout << "r1r2_range:" << r1r2_range << endl;
+        ll range = il1_range * r1r2_range + ir1_range * l1l2_range;
+        ans += P[i] *  range;
+    }
+    cout << ans << endl;
     return 0;
-  }
-
-  static const bool check(T &current, T &x) {
-    return current >= x;
-  }
-};
-
-int main() {
-  // vector<int> a{1,2,3,4,5,6,7,8};
-  vector<int> a{8,7,6,5,4,3,2,1};
-  SegmentTree< monoid_min > seg(a.size());
-  for(int i = 0;i < a.size();i++){
-      seg.set(i, a[i]);
-  }
-  seg.build();
-  // cout << seg.query(0,a.size()) << endl;
-  // seg.update(0,10);
-  // cout << seg.query(0,a.size()) << endl;
-  // seg.update(0,1);
-  // cout << seg.find_first(0,4) << endl;
-  // cout << seg.find_first(1,4) << endl;
-  cout << seg.find_last(0,9) << endl;
-  cout << seg.find_last(0,8) << endl;
-  cout << seg.find_last(0,7) << endl;
-  // cout << seg.find_last(a.size(),4) << endl;
-  // cout << seg.find_last(a.size()-1,4) << endl;
 }
