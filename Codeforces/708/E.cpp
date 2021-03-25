@@ -6,9 +6,12 @@
 #include <set>
 #include <map>
 #include <iomanip>
-#include <cmath>
+#include <numeric>
+
 using namespace std;
 using ll = long long;
+const ll BASE_NUM = 1000000007;
+
 
 vector<int> prime_numbers(int n){
     if (n <= 1){
@@ -29,7 +32,8 @@ vector<int> prime_numbers(int n){
     }
     return ans;
 }
-vector<int> primes = prime_numbers(3400);
+
+vector<int> primes = prime_numbers(10000);
 void decomposite(int N, map<int,int> &factors,int p_index = 0){
     if (N == 1){
         return;
@@ -47,16 +51,46 @@ void decomposite(int N, map<int,int> &factors,int p_index = 0){
     factors[N] += 1;
 }
 
-int main(){
-    cout << primes.size() << endl;
-    map<int,int> factors;
-    decomposite(998244353 - 1,factors);
-    for(auto f:factors){
-        cout << f.first << " " << f.second << endl;
+int solve()
+{
+    ll n, k;
+    scanf("%lld", &n);
+    scanf("%lld", &k);
+    set<set<ll>> segment_numbers;
+    ll ans = 0;
+    for(int i = 0;i < n;i++){
+        ll a;
+        scanf("%lld",&a);
+        map<int,int> factors;
+        decomposite(a,factors);
+        set<ll> odd_factors;
+        for(auto &p:factors){
+            if (p.second % 2 == 1){
+                odd_factors.insert(p.first);
+            }
+        }
+        if (segment_numbers.find(odd_factors) != segment_numbers.end()){
+            ans++;
+            segment_numbers.clear();
+            segment_numbers.insert(odd_factors);
+        }else{
+            segment_numbers.insert(odd_factors);
+        }
     }
-    // for(auto p: primes){
-    //     cout << p << "\n";
-    // }
-    // cout << flush;
+    ans++;
+    cout << ans << endl;
+    return 0;
+}
+
+int main()
+{
+    // 整数の入力
+    ll t;
+    cin >> t;
+    for (size_t i = 0; i < t; i++)
+    {
+        solve();
+    }
+    cout << flush;
     return 0;
 }
