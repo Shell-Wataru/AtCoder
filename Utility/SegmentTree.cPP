@@ -149,6 +149,40 @@ struct monoid_sum
   }
 };
 
+struct monoid_min_with_index
+{
+  using T = pair<ll,ll>;
+  static T op(T &l, T &r) {
+    if (l < r){
+      return l;
+    }else{
+      return r;
+    }
+  }
+  static const T id(){
+    return {INT_MAX,-1};
+  }
+
+  static const bool check(T &current, T &x) {
+      return current < x;
+  }
+};
+
+struct monoid_max_with_index
+{
+  using T = pair<ll,ll>;
+  static T op(T &l, T &r) {
+    if (l.first > r.first){
+      return l;
+    }else{
+      return r;
+    }
+  }
+  static const T id(){
+    return {INT_MIN,-1};
+  }
+};
+
 int main() {
   // vector<int> a{1,2,3,4,5,6,7,8};
   vector<int> a{8,7,6,5,4,3,2,1};

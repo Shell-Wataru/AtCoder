@@ -117,6 +117,10 @@ struct StronglyConnectedComponents
     }
 };
 
+int dfs(StronglyConnectedComponents<UnWeightedGraph> &scc,ll current,ll &answer,vector<ll> &DP){
+    answer += scc.nodes[current].size() * (scc.nodes[current].size() + 1 )/2;
+}
+
 int main()
 {
     UnWeightedGraph g(3);
@@ -132,7 +136,7 @@ int main()
         }
         cout << endl;
     }
-
+    vector<ll> DP(scc.nodes.size());
     for (int i = 0; i < scc.edges.size(); i++)
     {
         for (auto to : scc.edges[i])

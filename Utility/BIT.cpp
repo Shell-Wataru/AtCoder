@@ -47,7 +47,7 @@ public:
 int main(){
     BIT<ll> bit(10);
     for(int i = 0;i<10;i++){
-        bit.add(i,i);
+        bit.add(i,i+1);
     }
     for(int i = 0;i<10;i++){
         cout << bit.sum(i) << endl;

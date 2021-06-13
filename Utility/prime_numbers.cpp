@@ -47,6 +47,7 @@ void decomposite(int N, map<int,int> &factors,int p_index = 0){
     factors[N] += 1;
 }
 
+
 int main(){
     cout << primes.size() << endl;
     map<int,int> factors;
