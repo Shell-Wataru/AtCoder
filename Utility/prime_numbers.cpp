@@ -29,8 +29,8 @@ vector<int> prime_numbers(int n){
     }
     return ans;
 }
-
-void decomposite(int N, map<int,int> & factors, vector<int> &primes,int p_index = 0){
+vector<int> primes = prime_numbers(3400);
+void decomposite(int N, map<int,int> &factors,int p_index = 0){
     if (N == 1){
         return;
     }
@@ -38,7 +38,7 @@ void decomposite(int N, map<int,int> & factors, vector<int> &primes,int p_index 
     while (primes[p_index] * primes[p_index] <= N ) {
         if (N % primes[p_index] == 0) {
             factors[primes[p_index]] += 1;
-            decomposite(N/primes[p_index],factors,primes,p_index);
+            decomposite(N/primes[p_index],factors,p_index);
             return;
         } else {
             p_index++;
@@ -47,11 +47,11 @@ void decomposite(int N, map<int,int> & factors, vector<int> &primes,int p_index 
     factors[N] += 1;
 }
 
+
 int main(){
-    vector<int> primes = prime_numbers(100000);
     cout << primes.size() << endl;
     map<int,int> factors;
-    decomposite(998244353 - 1,factors,primes);
+    decomposite(998244353 - 1,factors);
     for(auto f:factors){
         cout << f.first << " " << f.second << endl;
     }

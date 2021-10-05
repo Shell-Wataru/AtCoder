@@ -16,6 +16,7 @@ class BIT
 public:
     vector<T> data;
     BIT(long long n) : data(n) {}
+    //　indexに足す
     void add(int index, T v)
     {
         int N = data.size();
@@ -25,10 +26,11 @@ public:
         }
     }
 
+    // [0,index)の和
     long long sum(int index)
     {
         T retValue = 0;
-        for (int i = index; i >= 0; i = (i & (i + 1)) - 1)
+        for (int i = index - 1; i >= 0; i = (i & (i + 1)) - 1)
         {
             retValue += data[i];
         }
@@ -45,7 +47,7 @@ public:
 int main(){
     BIT<ll> bit(10);
     for(int i = 0;i<10;i++){
-        bit.add(i,i);
+        bit.add(i,i+1);
     }
     for(int i = 0;i<10;i++){
         cout << bit.sum(i) << endl;

@@ -11,7 +11,7 @@ using ll = long long;
 
 const int NONE = -1;
 
-template< typename T >
+template <typename T>
 struct S
 {
     long long node, prev;
@@ -23,22 +23,22 @@ struct S
     }
 };
 
-template< typename T >
+template <typename T>
 class Dijkstra
 {
     long long n;
-    vector<map<long long, T> > G;
+    vector<vector<pair<long long, T>>> G;
 
-  public:
+public:
     vector<T> minc;
     vector<long long> prev;
 
-    Dijkstra(vector<map<long long, T> > &G) : n(G.size()), G(G), minc(n, NONE), prev(G.size()) {}
+    Dijkstra(vector<vector<pair<long long, T>>> &G) : n(G.size()), G(G), minc(n, NONE), prev(G.size()) {}
 
     void solve(long long start)
     {
         minc.assign(n, NONE);
-        priority_queue<S<T>, vector<S<T>>, greater<S<T>> > pq;
+        priority_queue<S<T>, vector<S<T>>, greater<S<T>>> pq;
         pq.push(S<T>(start, 0, NONE));
         while (!pq.empty())
         {
@@ -69,16 +69,17 @@ class Dijkstra
     {
         vector<ll> stack;
         stack.push_back(last);
-        while(prev[stack.back()] != NONE){
+        while (prev[stack.back()] != NONE)
+        {
             stack.push_back(prev[stack.back()]);
         }
-        reverse(stack.begin(),stack.end());
+        reverse(stack.begin(), stack.end());
         return stack;
     };
 };
 
 int main(){
-    vector<map<ll,ll>> G{
+    vector<vector<pair<ll,ll>>> G{
         {{1, 1},{2, 4},{3, 16}},
         {{2, 1},{3, 4}},
         {{3, 1}},
