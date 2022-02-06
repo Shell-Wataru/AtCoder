@@ -1,13 +1,13 @@
-#include <string>
-#include <cmath>
-#include <cstring>
-#include <cstdio>
 #include <iostream>
+#include <cstdio>
 #include <algorithm>
 #include <vector>
-#include <map>
+#include <deque>
 #include <queue>
+#include <set>
+#include <map>
 #include <iomanip>
+#include <numeric>
 using namespace std;
 using ll = long long;
 
@@ -46,6 +46,7 @@ struct StronglyConnectedComponents
     vector<int> comp, order, used;
     vector<vector<ll>> nodes;
     vector<vector<ll>> edges;
+    vector<vector<ll>> rev_edges;
 
     StronglyConnectedComponents(G &g) : g(g), gg(g.size()), rg(g.size()), comp(g.size(), -1), used(g.size())
     {
@@ -95,6 +96,7 @@ struct StronglyConnectedComponents
                 rdfs(i, ptr), ptr++;
 
         edges.resize(ptr);
+        rev_edges.resize(ptr);
         nodes.resize(ptr);
         for (int i = 0; i < g.size(); i++)
         {
@@ -104,6 +106,7 @@ struct StronglyConnectedComponents
                 if (x == y)
                     continue;
                 edges[x].push_back(y);
+                rev_edges[y].push_back(x);
             }
         }
         for (int i = 0; i < g.size(); i++)
@@ -113,24 +116,62 @@ struct StronglyConnectedComponents
     }
 };
 
-double dfs(StronglyConnectedComponents<UnWeightedGraph> &scc,ll node){
-    return 0.0;
-}
-int main(){
-    ll N;
-    cin >> N;
-    vector<string> S(N);
-    for(int i = 0;i < N;i++ ){
-        cin >> S[i];
-    }
-    UnWeightedGraph g(N);
-    for(int i = 0;i < N;i++){
-        for(int j = 0;j <N;j++){
-            if (S[i][j]== '1'){
+int solve()
+{
+    int n;
+    scanf("%d", &n);
+    UnWeightedGraph g(n);
+    for (int i = 0; i < n; i++)
+    {
+        string s;
+        cin >> s;
+        for (int j = 0; j < n; j++)
+        {
+            if (s[j] == '1')
+            {
                 g[i].push_back(j);
             }
         }
     }
     StronglyConnectedComponents<UnWeightedGraph> scc(g);
+    //   vector<ll> parent_sizes(scc.nodes.size());
+    double ans = 0;
+    for (int i = 0; i < scc.nodes.size(); i++)
+    {
+        vector<bool> visited(scc.nodes.size(), false);
+        ll parent_size = 0;
+        queue<ll> q;
+        q.push(i);
+        while (!q.empty())
+        {
+            ll current = q.front();
+            q.pop();
+            for (auto to : scc.rev_edges[current])
+            {
+                if (!visited[to])
+                {
+                    parent_size += scc.nodes[to].size();
+                    visited[to] = true;
+                    q.push(to);
+                }
+            }
+        }
+        //   parent_sizes[i] = parent_size;
+        ans += 1.0 * scc.nodes[i].size() / (scc.nodes[i].size() + parent_size);
+    }
+    cout << fixed << setprecision(12) << ans << endl;
+    return 0;
+}
+
+int main()
+{
+    // // 整数の入力
+    //   ll t;
+    //   cin >> t;
+    //   for (size_t i = 0; i < t; i++)
+    //   {
+    solve();
+    //   }
+    //   cout << flush;
     return 0;
 }

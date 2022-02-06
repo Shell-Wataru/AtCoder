@@ -8,6 +8,7 @@
 #include <cmath>
 #include <set>
 #include <numeric>
+#include <climits>
 #include <boost/multiprecision/cpp_int.hpp>
 using namespace std;
 using ll = long long;

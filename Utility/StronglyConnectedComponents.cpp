@@ -117,10 +117,6 @@ struct StronglyConnectedComponents
     }
 };
 
-int dfs(StronglyConnectedComponents<UnWeightedGraph> &scc,ll current,ll &answer,vector<ll> &DP){
-    answer += scc.nodes[current].size() * (scc.nodes[current].size() + 1 )/2;
-}
-
 int main()
 {
     UnWeightedGraph g(3);

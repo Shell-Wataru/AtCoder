@@ -18,16 +18,18 @@ using ll = long long;
 int main(){
     ll N,M;
     cin >> N >> M;
-    vector<bool> edges(N*N,false);
+    vector<vector<bool>> edges(N,vector<bool>(N,false));
     for(int i = 0;i < M;i++){
         ll u,v;
         cin >> u >> v;
         u--;
         v--;
-        edges[N*u + v] = true;
-        edges[N*v + u] = true;
+        edges[u][v] = true;
+        edges[v][u] = true;
     }
     vector<ll> DP(1ll<<N,1000000);
+    DP[0] = 0;
+
     for(int i = 0;i < (1ll<<N);i++){
         vector<ll> nodes;
         for(int j = 0;j < N;j++){
@@ -38,31 +40,16 @@ int main(){
         ll edge_count = 0;
         for(int j = 0;j < nodes.size();j++){
             for(int k = j+1;k < nodes.size();k++){
-                if (edges[N*nodes[j]+nodes[k]]){
+                if (edges[nodes[j]][nodes[k]]){
                     edge_count++;
                 }
             }
         }
-        if (edge_count == nodes.size() * (nodes.size() - 1) /2){
+        if (edge_count == nodes.size() * (nodes.size()-1)/2){
+            ll others = ((1ll<<N)-1) & (~i);
             DP[i] = 1;
-        }else if (edge_count == nodes.size() * (nodes.size() - 1) /2 - 1){
-            DP[i] = 2;
-        }else if (edge_count == 0){
-            DP[i] = nodes.size();
-        }else if (edge_count == 1){
-            DP[i] = nodes.size() - 1;
-        }else{
-            for(int j = 1;j < (1ll<<((ll)nodes.size()-1));j++){
-                ll a = 0;
-                ll b = 0;
-                for(int k = 0;k < nodes.size();k++){
-                    if (j & 1ll<<k){
-                        a += 1ll<<nodes[k];
-                    }else{
-                        b += 1ll<<nodes[k];
-                    }
-                }
-                DP[i] = min(DP[i],DP[a] + DP[b]);
+            for(int sub=others;sub;sub=(sub-1)&others){
+                DP[sub| i]=min(DP[sub| i],DP[sub] + 1);
             }
         }
     }

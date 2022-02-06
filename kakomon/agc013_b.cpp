@@ -15,17 +15,13 @@
 using namespace std;
 using ll = long long;
 
-void dfs(vector<vector<ll>> &G,set<pair<ll,ll>> &edges,vector<bool> &visited,deque<ll> &path, ll current){
+void dfs(vector<vector<ll>> &G,vector<bool> &visited,deque<ll> &path, ll current){
     visited[current] = true;
-    ll n = G[current].size();
     for(auto to:G[current]){
         if (!visited[to]){
-            if (edges.find({path.front(),to}) != edges.end()){
-                path.emplace_front(to);
-            }else if (edges.find({path.back(),to}) != edges.end()){
-                path.emplace_back(to);
-            }
-            dfs(G,edges,visited,path,to);
+            path.push_back(to);
+            dfs(G,visited,path,to);
+            return;
         }
     }
     return;
@@ -45,14 +41,13 @@ int main()
         b--;
         G[a].push_back(b);
         G[b].push_back(a);
-        edges.emplace(a,b);
-        edges.emplace(b,a);
     }
     vector<bool> visited(N,false);
-
     deque<ll> path;
     path.emplace_back(0);
-    dfs(G,edges,visited,path, 0);
+    dfs(G,visited,path, 0);
+    reverse(path.begin(),path.end());
+    dfs(G,visited,path, 0);
     cout << path.size() << "\n";
     for(int i = 0;i < path.size();i++){
         if (i != 0){

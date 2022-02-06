@@ -27,7 +27,7 @@ public:
     }
 
     // [0,index)の和
-    long long sum(int index)
+    T sum(int index)
     {
         T retValue = 0;
         for (int i = index - 1; i >= 0; i = (i & (i + 1)) - 1)
@@ -35,6 +35,12 @@ public:
             retValue += data[i];
         }
         return retValue;
+    }
+
+    // [l,r)の和
+    T sum(int l,int r)
+    {
+        return sum(r) - sum(l);
     }
 
     void show(){
