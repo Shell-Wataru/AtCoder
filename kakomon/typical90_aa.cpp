@@ -12,43 +12,37 @@
 using namespace std;
 using ll = long long;
 
-long long extGCD(long long a, long long b, long long &x, long long &y)
-{
-    if (b == 0)
-    {
-        x = 1;
-        y = 0;
-        return a;
-    }
-    long long d = extGCD(b, a % b, y, x);
-    y -= a / b * x;
-    return d;
-}
-
 int main()
 {
     // 整数の入力
-    ll N, A, B, C;
-    vector<ll> candidates(3);
-    cin >> N >> candidates[0] >> candidates[1] >> candidates[2];
-    sort(candidates.begin(), candidates.end());
-    A = candidates[1];
-    B = candidates[2];
-    ll ans = numeric_limits<ll>::max();
-    for (int i = 0; i < 10000; i++)
+    ll N;
+    cin >> N;
+    SegmentTree<monoid_min> seg(N);
+    for (ll i = 0; i < N; i++)
     {
-        ll remain = N - A * i;
-        if (remain % gcd(B, C) != 0)
+        ll a;
+        cin >> a;
+        seg.set(i, {a, i});
+    }
+    seg.build();
+    ll last = -1;
+    ll ans = 1;
+    // cout << seg.query(0, N).first << endl;
+    while (seg.query(0, N).first != numeric_limits<ll>::max())
+    {
+        auto p = seg.query(last + 1, N);
+        // cout << "!" << p.first << " " << p.second << endl;
+        if (p.first == numeric_limits<ll>::max())
         {
-            continue;
+            last = -1;
+            ans++;
         }
         else
         {
-            ll x, y;
-            extGCD(B / gcd(B, C), C / gcd(B, C), x, y);
-            ll j = remain / gcd(B, C) * x;
-            ll k = remain / gcd(B, C) * y;
+            last = p.second;
+            seg.update(p.second, {numeric_limits<ll>::max(), p.second});
         }
     }
+    cout << ans << endl;
     return 0;
 }
