@@ -10,142 +10,195 @@
 #include <iomanip>
 #include <functional>
 #include <random>
-
+#include <set>
 using namespace std;
 using ll = long long;
 
 const long long BASE_NUM = 1000000007;
-//https://scrapbox.io/pocala-kyopro/%E6%8B%A1%E5%BC%B5%E3%83%A6%E3%83%BC%E3%82%AF%E3%83%AA%E3%83%83%E3%83%89%E3%81%AE%E4%BA%92%E9%99%A4%E6%B3%95
-// https://ei1333.github.io/luzhiled/snippets/math/combination.html
-template< int mod >
-struct ModInt {
-  int x;
+// https://scrapbox.io/pocala-kyopro/%E6%8B%A1%E5%BC%B5%E3%83%A6%E3%83%BC%E3%82%AF%E3%83%AA%E3%83%83%E3%83%89%E3%81%AE%E4%BA%92%E9%99%A4%E6%B3%95
+//  https://ei1333.github.io/luzhiled/snippets/math/combination.html
+template <int mod>
+struct ModInt
+{
+    int x;
 
-  ModInt() : x(0) {}
+    ModInt() : x(0) {}
 
-  ModInt(int64_t y) : x(y >= 0 ? y % mod : (mod - (-y) % mod) % mod) {}
+    ModInt(int64_t y) : x(y >= 0 ? y % mod : (mod - (-y) % mod) % mod) {}
 
-  ModInt &operator+=(const ModInt &p) {
-    if((x += p.x) >= mod) x -= mod;
-    return *this;
-  }
-
-  ModInt &operator-=(const ModInt &p) {
-    if((x += mod - p.x) >= mod) x -= mod;
-    return *this;
-  }
-
-  ModInt &operator*=(const ModInt &p) {
-    x = (int) (1LL * x * p.x % mod);
-    return *this;
-  }
-
-  ModInt &operator/=(const ModInt &p) {
-    *this *= p.inverse();
-    return *this;
-  }
-
-  ModInt operator-() const { return ModInt(-x); }
-
-  ModInt operator+(const ModInt &p) const { return ModInt(*this) += p; }
-
-  ModInt operator-(const ModInt &p) const { return ModInt(*this) -= p; }
-
-  ModInt operator*(const ModInt &p) const { return ModInt(*this) *= p; }
-
-  ModInt operator/(const ModInt &p) const { return ModInt(*this) /= p; }
-
-  bool operator==(const ModInt &p) const { return x == p.x; }
-
-  bool operator!=(const ModInt &p) const { return x != p.x; }
-
-  ModInt inverse() const {
-    int a = x, b = mod, u = 1, v = 0, t;
-    while(b > 0) {
-      t = a / b;
-      swap(a -= t * b, b);
-      swap(u -= t * v, v);
+    ModInt &operator+=(const ModInt &p)
+    {
+        if ((x += p.x) >= mod)
+            x -= mod;
+        return *this;
     }
-    return ModInt(u);
-  }
 
-  ModInt pow(int64_t n) const {
-    ModInt ret(1), mul(x);
-    while(n > 0) {
-      if(n & 1) ret *= mul;
-      mul *= mul;
-      n >>= 1;
+    ModInt &operator-=(const ModInt &p)
+    {
+        if ((x += mod - p.x) >= mod)
+            x -= mod;
+        return *this;
     }
-    return ret;
-  }
 
-  friend ostream &operator<<(ostream &os, const ModInt &p) {
-    return os << p.x;
-  }
+    ModInt &operator*=(const ModInt &p)
+    {
+        x = (int)(1LL * x * p.x % mod);
+        return *this;
+    }
 
-  friend istream &operator>>(istream &is, ModInt &a) {
-    int64_t t;
-    is >> t;
-    a = ModInt< mod >(t);
-    return (is);
-  }
+    ModInt &operator/=(const ModInt &p)
+    {
+        *this *= p.inverse();
+        return *this;
+    }
 
-  static int get_mod() { return mod; }
+    ModInt operator-() const { return ModInt(-x); }
+
+    ModInt operator+(const ModInt &p) const { return ModInt(*this) += p; }
+
+    ModInt operator-(const ModInt &p) const { return ModInt(*this) -= p; }
+
+    ModInt operator*(const ModInt &p) const { return ModInt(*this) *= p; }
+
+    ModInt operator/(const ModInt &p) const { return ModInt(*this) /= p; }
+
+    bool operator==(const ModInt &p) const { return x == p.x; }
+
+    bool operator!=(const ModInt &p) const { return x != p.x; }
+
+    ModInt inverse() const
+    {
+        int a = x, b = mod, u = 1, v = 0, t;
+        while (b > 0)
+        {
+            t = a / b;
+            swap(a -= t * b, b);
+            swap(u -= t * v, v);
+        }
+        return ModInt(u);
+    }
+
+    ModInt pow(int64_t n) const
+    {
+        ModInt ret(1), mul(x);
+        while (n > 0)
+        {
+            if (n & 1)
+                ret *= mul;
+            mul *= mul;
+            n >>= 1;
+        }
+        return ret;
+    }
+
+    friend ostream &operator<<(ostream &os, const ModInt &p)
+    {
+        return os << p.x;
+    }
+
+    friend istream &operator>>(istream &is, ModInt &a)
+    {
+        int64_t t;
+        is >> t;
+        a = ModInt<mod>(t);
+        return (is);
+    }
+
+    static int get_mod() { return mod; }
 };
-using modint = ModInt< BASE_NUM >;
+using modint = ModInt<BASE_NUM>;
 
-template< typename T >
-struct Combination {
-  vector< T > _fact, _rfact, _inv;
+template <typename T>
+struct Combination
+{
+    vector<T> _fact, _rfact, _inv;
 
-  Combination(int sz) : _fact(sz + 1), _rfact(sz + 1), _inv(sz + 1) {
-    _fact[0] = _rfact[sz] = _inv[0] = 1;
-    for(int i = 1; i <= sz; i++) _fact[i] = _fact[i - 1] * i;
-    _rfact[sz] /= _fact[sz];
-    for(int i = sz - 1; i >= 0; i--) _rfact[i] = _rfact[i + 1] * (i + 1);
-    for(int i = 1; i <= sz; i++) _inv[i] = _rfact[i] * _fact[i - 1];
-  }
+    Combination(int sz) : _fact(sz + 1), _rfact(sz + 1), _inv(sz + 1)
+    {
+        _fact[0] = _rfact[sz] = _inv[0] = 1;
+        for (int i = 1; i <= sz; i++)
+            _fact[i] = _fact[i - 1] * i;
+        _rfact[sz] /= _fact[sz];
+        for (int i = sz - 1; i >= 0; i--)
+            _rfact[i] = _rfact[i + 1] * (i + 1);
+        for (int i = 1; i <= sz; i++)
+            _inv[i] = _rfact[i] * _fact[i - 1];
+    }
 
-  inline T fact(int k) const { return _fact[k]; }
+    inline T fact(int k) const { return _fact[k]; }
 
-  inline T rfact(int k) const { return _rfact[k]; }
+    inline T rfact(int k) const { return _rfact[k]; }
 
-  inline T inv(int k) const { return _inv[k]; }
+    inline T inv(int k) const { return _inv[k]; }
 
-  T P(int n, int r) const {
-    if(r < 0 || n < r) return 0;
-    return fact(n) * rfact(n - r);
-  }
+    T P(int n, int r) const
+    {
+        if (r < 0 || n < r)
+            return 0;
+        return fact(n) * rfact(n - r);
+    }
 
-  T C(int p, int q) const {
-    if(q < 0 || p < q) return 0;
-    return fact(p) * rfact(q) * rfact(p - q);
-  }
+    T C(int p, int q) const
+    {
+        if (q < 0 || p < q)
+            return 0;
+        return fact(p) * rfact(q) * rfact(p - q);
+    }
 
-  T H(int n, int r) const {
-    if(n < 0 || r < 0) return (0);
-    return r == 0 ? 1 : C(n + r - 1, r);
-  }
+    T H(int n, int r) const
+    {
+        if (n < 0 || r < 0)
+            return (0);
+        return r == 0 ? 1 : C(n + r - 1, r);
+    }
 };
 
-using modint = ModInt< BASE_NUM >;
+using modint = ModInt<BASE_NUM>;
+
+ll solve()
+{
+    ll N, M, K, L;
+    cin >> N;
+    vector<ll> X(N);
+    modint ans = 1;
+    ll last_x = 0;
+    for (int i = 0; i < N; i++)
+    {
+        cin >> X[i];
+    }
+    ll remain_count = 0;
+    for (int i = 0; i < N; i++)
+    {
+        if (i == 0)
+        {
+            last_x = 1;
+            remain_count++;
+        }
+        else if (X[i] == last_x + 1)
+        {
+            ans *= remain_count + 1;
+        }
+        else
+        {
+            last_x += 2;
+            remain_count++;
+        }
+    }
+    for (int i = 1; i <= remain_count; i++)
+    {
+        ans *= i;
+    }
+    cout << ans << endl;
+    return 0;
+}
 
 int main()
 {
-    // 整数の入力
-    ll N;
-    cin >> N;
-    vector<ll> C(N);
-    for(int i = 0;i <N;i++){
-      cin >> C[i];
-    }
-    sort(C.rbegin(),C.rend());
-    modint ans = 0;
-    modint two = 2;
-    for(int i = 0;i< N;i++){
-      // ans += two.pow(i-1)*(i+2)*C[i]*two.pow(N-1-i)*two.pow(N);
-      ans += two.pow(i-1+N-1-i+N)*(i+2)*C[i];
-    }
-    cout << ans << endl;
+    // ll N;
+    // cin >> N;
+    // for(int i = 1; i <= N;i++){
+    solve();
+    // }
+    cout << flush;
     return 0;
 }

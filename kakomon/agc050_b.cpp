@@ -50,9 +50,37 @@ int main()
     ll N;
     cin >> N;
     vector<ll> a(N);
-    for(int i = 0;i < N;i++){
+    for (int i = 0; i < N; i++)
+    {
         cin >> a[i];
     }
-
+    vector<ll> cumSum(N + 1, 0);
+    for (int i = 0; i < N; i++)
+    {
+        cumSum[i + 1] = cumSum[i] + a[i];
+    }
+    vector<vector<ll>> DPN(N, vector<ll>(N + 1, 0));
+    vector<vector<ll>> DPR(N, vector<ll>(N + 1, 0));
+    for (int i = 1; i <= N; i++)
+    {
+        for (int j = 0; i + j <= N; j++)
+        {
+            DPR[j][j+i] = cumSum[j+i] - cumSum[j];
+            for (int k = 1; k < i; k++)
+            {
+                // N
+                DPN[j][j + i] = max(DPN[j][j + i], DPN[j][j + k] + DPN[j + k][j + i]);
+                // R
+                DPR[j][j + i] = max(DPR[j][j + i], DPR[j][j + k] + DPR[j + k][j + i]);
+            }
+            if (i % 3 == 0)
+            {
+                ll m = max(DPN[j][j + i],DPR[j][j + i]);
+                DPN[j][j + i] = m;
+                DPR[j][j + i] = m;
+            }
+        }
+    }
+    cout << DPN[0][N] << endl;
     return 0;
 }

@@ -16,7 +16,6 @@ using namespace std;
 using ll = long long;
 namespace mp = boost::multiprecision;
 
-
 const long long BASE_NUM = 1000000007;
 // https://scrapbox.io/pocala-kyopro/%E6%8B%A1%E5%BC%B5%E3%83%A6%E3%83%BC%E3%82%AF%E3%83%AA%E3%83%83%E3%83%89%E3%81%AE%E4%BA%92%E9%99%A4%E6%B3%95
 //  https://ei1333.github.io/luzhiled/snippets/math/combination.html
@@ -111,146 +110,78 @@ struct ModInt
 };
 using modint = ModInt<998244353>;
 
-//https://ei1333.github.io/luzhiled/snippets/math/fast-fourier-transform.html
-//https://cp-algorithms.com/algebra/fft.html#toc-tgt-7
-template< int mod >
-struct NumberTheoreticTransform {
+template <typename T>
+struct Combination
+{
+  vector<T> _fact, _rfact, _inv;
 
-  vector< int > rev, rts;
-  int base, max_base, root;
-
-  NumberTheoreticTransform() : base(1), rev{0, 1}, rts{0, 1} {
-    // assert(mod >= 3 && mod % 2 == 1);
-    auto tmp = mod - 1;
-    max_base = 0;
-    while(tmp % 2 == 0) tmp >>= 1, max_base++;
-    root = 2;
-    while(mod_pow(root, (mod - 1) >> 1) == 1) ++root;
-    // assert(mod_pow(root, mod - 1) == 1);
-    root = mod_pow(root, (mod - 1) >> max_base);
+  Combination(int sz) : _fact(sz + 1), _rfact(sz + 1), _inv(sz + 1)
+  {
+    _fact[0] = _rfact[sz] = _inv[0] = 1;
+    for (int i = 1; i <= sz; i++)
+      _fact[i] = _fact[i - 1] * i;
+    _rfact[sz] /= _fact[sz];
+    for (int i = sz - 1; i >= 0; i--)
+      _rfact[i] = _rfact[i + 1] * (i + 1);
+    for (int i = 1; i <= sz; i++)
+      _inv[i] = _rfact[i] * _fact[i - 1];
   }
 
-  inline int mod_pow(int x, int n) {
-    int ret = 1;
-    while(n > 0) {
-      if(n & 1) ret = mul(ret, x);
-      x = mul(x, x);
-      n >>= 1;
-    }
-    return ret;
+  inline T fact(int k) const { return _fact[k]; }
+
+  inline T rfact(int k) const { return _rfact[k]; }
+
+  inline T inv(int k) const { return _inv[k]; }
+
+  T P(int n, int r) const
+  {
+    if (r < 0 || n < r)
+      return 0;
+    return fact(n) * rfact(n - r);
   }
 
-  inline int inverse(int x) {
-    return mod_pow(x, mod - 2);
+  T C(int p, int q) const
+  {
+    if (q < 0 || p < q)
+      return 0;
+    return fact(p) * rfact(q) * rfact(p - q);
   }
 
-  inline unsigned add(unsigned x, unsigned y) {
-    x += y;
-    if(x >= mod) x -= mod;
-    return x;
-  }
-
-  inline unsigned mul(unsigned a, unsigned b) {
-    return 1ull * a * b % (unsigned long long) mod;
-  }
-
-  void ensure_base(int nbase) {
-    if(nbase <= base) return;
-    rev.resize(1 << nbase);
-    rts.resize(1 << nbase);
-    for(int i = 0; i < (1 << nbase); i++) {
-      rev[i] = (rev[i >> 1] >> 1) + ((i & 1) << (nbase - 1));
-    }
-    // assert(nbase <= max_base);
-    while(base < nbase) {
-      int z = mod_pow(root, 1 << (max_base - 1 - base));
-      for(int i = 1 << (base - 1); i < (1 << base); i++) {
-        rts[i << 1] = rts[i];
-        rts[(i << 1) + 1] = mul(rts[i], z);
-      }
-      ++base;
-    }
-  }
-
-
-  void ntt(vector< int > &a) {
-    const int n = (int) a.size();
-    // assert((n & (n - 1)) == 0);
-    int zeros = __builtin_ctz(n);
-    ensure_base(zeros);
-    int shift = base - zeros;
-    for(int i = 0; i < n; i++) {
-      if(i < (rev[i] >> shift)) {
-        swap(a[i], a[rev[i] >> shift]);
-      }
-    }
-    for(int k = 1; k < n; k <<= 1) {
-      for(int i = 0; i < n; i += 2 * k) {
-        for(int j = 0; j < k; j++) {
-          int z = mul(a[i + j + k], rts[j + k]);
-          a[i + j + k] = add(a[i + j], mod - z);
-          a[i + j] = add(a[i + j], z);
-        }
-      }
-    }
-  }
-
-  vector< int > multiply(vector< int > a, vector< int > b) {
-    int need = a.size() + b.size() - 1;
-    int nbase = 1;
-    while((1 << nbase) < need) nbase++;
-    ensure_base(nbase);
-    int sz = 1 << nbase;
-    a.resize(sz, 0);
-    b.resize(sz, 0);
-    ntt(a);
-    ntt(b);
-    int inv_sz = inverse(sz);
-    for(int i = 0; i < sz; i++) {
-      a[i] = mul(a[i], mul(b[i], inv_sz));
-    }
-    reverse(a.begin() + 1, a.end());
-    ntt(a);
-    a.resize(need);
-    return a;
+  T H(int n, int r) const
+  {
+    if (n < 0 || r < 0)
+      return (0);
+    return r == 0 ? 1 : C(n + r - 1, r);
   }
 };
+
 
 int main()
 {
     // 整数の入力
     ll N,K;
     cin >> N >> K;
-    cout << "!!" << endl;
-    vector<ll> A(N);
-    vector<int>  Count(1000000,0);
-    cout << "!!" << endl;
+    vector<modint> A(N);
+    vector<modint> S(K+1);
+    Combination<modint> C(K+1);
     for(int i = 0;i < N;i++){
         cin >> A[i];
-        Count[A[i]] += 1;
     }
-    cout << "!!" << endl;
-    NumberTheoreticTransform<998244353> ntt;
-    auto conv = ntt.multiply(Count,Count);
-    cout << "!!" << endl;
-    for(int i = 0;i  < N;i++){
-        conv[A[i]*2] -= 1;
-    }
-    for(int i = 0;i < conv.size();i++){
-        conv[i] /= 2;
-    }
-    vector<modint> ans(K+1,0);
-    for(int i = 2;i < conv.size();i++){
-        if (conv[i] == 0){
-            continue;
-        }
-        modint base(i);
-        for(int j = 1;j <= K;j++){
-            ans[j] += base.pow(j) * conv[i];
+    for(int i = 0;i < N;i++){
+        for(int j = 0;j <= K;j++){
+          S[j] += A[i].pow(j);
         }
     }
-    for(int j = 1;j<= K;j++){
-        cout << ans[j] << endl;
+    modint two = 2;
+    for(int i = 1;i <= K;i++){
+      modint ans = 0;
+      for(int j = 0;j <= i;j++){
+        ans += C.C(i,j) * S[j]*S[i-j];
+      }
+      ans -= two.pow(i) * S[i];
+      ans /= 2;
+      cout << ans << "\n";
     }
+    cout << flush;
     return 0;
 }

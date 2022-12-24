@@ -27,7 +27,7 @@ public:
     }
 
     // indexを取得
-    long long get(int index)
+    T get(int index)
     {
         T retValue = 0;
         int N = data.size();
@@ -47,10 +47,10 @@ public:
 
 int main(){
     DualBIT<ll> dual_bit(10);
-    // for(int i = 0;i<10;i++){
-        dual_bit.add(0,1);
-    // }
-    // for(int i = 0;i<10;i++){
-    cout << dual_bit.get(0) << endl;
-    // }
+    for(int i = 0;i<10;i++){
+        dual_bit.add(i+1,1);
+    }
+    for(int i = 0;i<10;i++){
+        cout << dual_bit.get(i) << endl;
+    }
 }

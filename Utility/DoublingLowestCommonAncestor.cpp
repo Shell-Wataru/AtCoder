@@ -29,8 +29,8 @@ struct DoublingLowestCommonAncestor {
     }
   }
 
-  void build() {
-    dfs(0, -1, 0);
+  void build(ll root) {
+    dfs(root, -1, 0);
     for(int k = 0; k + 1 < LOG; k++) {
       for(int i = 0; i < table[k].size(); i++) {
         if(table[k][i] == -1) table[k + 1][i] = -1;
@@ -52,6 +52,18 @@ struct DoublingLowestCommonAncestor {
       }
     }
     return table[0][u];
+  }
+
+  int distance(int u, int v) {
+    ll c = query(u,v);
+    return dep[u]+dep[v]- 2*dep[c];
+  }
+
+  int ancestor(int u, int k) {
+    for(int i = LOG - 1; i >= 0; i--) {
+      if((k >> i) & 1) u = table[i][u];
+    }
+    return u;
   }
 };
 

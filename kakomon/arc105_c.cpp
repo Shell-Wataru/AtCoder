@@ -20,50 +20,62 @@ int main()
     ll N,M;
     cin >> N >> M;
     vector<ll> w(N);
+    ll maximum_weight = 0;
+    ll min_v = numeric_limits<ll>::max();
     for(int i = 0;i < N;i++){
         cin >> w[i];
+        maximum_weight = max(maximum_weight,w[i]);
     }
-    sort(w.begin(),w.end());
-    ll largest = w.back();
-    w.pop_back();
-    ll second_largest = w.back();
-    w.pop_back();
     vector<pair<ll,ll>> lv(M);
-    for(int i = 0;i < N;i++){
-        cin >> lv[i].first >> lv[i].second;
+    for(int i = 0;i < M;i++){
+        cin >> lv[i].second >> lv[i].first;
+        min_v = min(min_v,lv[i].first);
+    }
+    if (maximum_weight > min_v){
+        cout << -1 << endl;
+        return 0;
     }
     sort(lv.begin(),lv.end());
+    sort(w.begin(),w.end());
+    vector<pair<ll,ll>> zipped_lv;
+
+    zipped_lv.push_back({0,0});
+    for(auto p:lv){
+        if (zipped_lv.empty()){
+            zipped_lv.push_back(p);
+        }else if (p.second > zipped_lv.back().second){
+            if (p.first == zipped_lv.back().first){
+                zipped_lv.back().second = p.second;
+            }else{
+                zipped_lv.push_back(p);
+            }
+        }
+    }
+    zipped_lv.push_back({numeric_limits<ll>::max(),numeric_limits<ll>::max()});
     ll ans = numeric_limits<ll>::max();
     do {
-        vector<pair<ll,ll>> orders;
-        orders.push_back({largest,0});
-        for(int i = 0;i < N-2;i++){
-            orders.push_back({w[i],0});
+        vector<vector<ll>> length(N+1,vector<ll>(N+1,numeric_limits<ll>::max()/2));
+        vector<vector<ll>> weights(N+1,vector<ll>(N+1,0));
+        for(int i = 0;i < N;i++){
+            length[i][i+1] = 0;
+            weights[i][i+1] = w[i];
         }
-        orders.push_back({second_largest,0});
-        bool can_make = true;
-        for(int i = 0;i < M;i++){
-            ll weight = 0;
-            ll current_length = 0;
-            ll l = -1;
-
-            for(int r = 0;r < N;r++){
-                while
-                if (current_length + orders[r].second < lv[i].first && weight + w[r] <= lv[i].first){
-                    current_length += orders[r].second;
-                    weight += w[r];
-                }else if (current_length + orders[r].second >= lv[i].first && weight + w[r] <= lv[i].first){
-                    current_length += orders[r].second;
-                    current_length -= orders[l+1].second;
-                    weight += w[r];
-                    weight -= w[l];
-                }else{
-                    current_length -= orders[l+1].second;
-                    weight -= w[l];
+        for(int i = 2;i<= N;i++){
+            for(int j = 0;i+j <= N;j++){
+                weights[j][i+j] = weights[j][i+j-1] + weights[i+j-1][i+j];
+                auto iter = lower_bound(zipped_lv.begin(),zipped_lv.end(),make_pair(weights[j][i+j],-1ll));
+                iter--;
+                ll base = iter->second;
+                // cout << weights[j][i+j] << ":" << base << endl;
+                for(int k = 2;k <= i-1;k++){
+                    base = max(length[j][j+k] + length[j+k-1][i+j],base);
                 }
+                // cout << base << endl;
+                length[j][j+i] = base;
             }
-
         }
+        ans = min(ans,length[0][N]);
     }while(next_permutation(w.begin(),w.end()));
+    cout << ans << endl;
     return 0;
 }

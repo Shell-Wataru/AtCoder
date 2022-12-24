@@ -68,6 +68,7 @@ int main()
             {
                 if (D[r][c] + i + 1 < D[r - i][c])
                 {
+                    D[r - i][c] = min(D[r - i][c],D[r][c] + i + 2);
                     q.push({D[r][c] + i + 1, {r - i, c}});
                 }else if (D[r - i][c] < numeric_limits<ll>::max()){
                     break;

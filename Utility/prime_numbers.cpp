@@ -10,14 +10,14 @@
 using namespace std;
 using ll = long long;
 
-vector<int> prime_numbers(int n){
+vector<ll> prime_numbers(ll n){
     if (n <= 1){
-        return vector<int>(0);
+        return vector<ll>(0);
     }
-    vector<int> ans = {2};
-    for(int i = 3;i <= n;i++){
+    vector<ll> ans = {2};
+    for(ll i = 3;i <= n;i++){
         bool is_prime = true;
-        for(int j = 0; ans[j] * ans[j] <= i;j++){
+        for(ll j = 0; ans[j] * ans[j] <= i;j++){
             if (i % ans[j] == 0){
                 is_prime = false;
                 break;
@@ -29,8 +29,8 @@ vector<int> prime_numbers(int n){
     }
     return ans;
 }
-vector<int> primes = prime_numbers(3400);
-void decomposite(int N, map<int,int> &factors,int p_index = 0){
+vector<ll> primes = prime_numbers(32000);
+void decomposite(ll N, map<ll,ll> &factors,ll p_index = 0){
     if (N == 1){
         return;
     }
@@ -48,9 +48,9 @@ void decomposite(int N, map<int,int> &factors,int p_index = 0){
 }
 
 
-int main(){
+ll main(){
     cout << primes.size() << endl;
-    map<int,int> factors;
+    map<ll,ll> factors;
     decomposite(998244353 - 1,factors);
     for(auto f:factors){
         cout << f.first << " " << f.second << endl;
