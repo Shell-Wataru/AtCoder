@@ -146,7 +146,6 @@ using modint = ModInt<BASE_NUM>;
 
 int main()
 {
-  modint::get_mod();
   Combination<ModInt<BASE_NUM>> combination(100);
   cout << combination.C(4, 2) << endl;
   return 0;

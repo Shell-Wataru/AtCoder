@@ -1,3 +1,4 @@
+#define _USE_MATH_DEFINES
 #include <iostream>
 #include <algorithm>
 #include <vector>
@@ -10,26 +11,19 @@
 #include <iomanip>
 #include <functional>
 #include <random>
-#include <boost/multiprecision/cpp_int.hpp>
 
 using namespace std;
 using ll = long long;
 
 int main()
 {
-    // 整数の入力
-    ll N;
-    cin >> N;
-    set<string> A;
-    for (int i = 0; i < N; i++)
+    ll N, K;
+    cin >> N >> K;
+    ll ans = K;
+    for (int i = 1; i < N; i++)
     {
-        string S;
-        cin >> S;
-        if (A.find(S) == A.end())
-        {
-            A.insert(S);
-            cout << i + 1 << endl;
-        }
+        ans *= K - 1;
     }
+    cout << ans << endl;
     return 0;
 }

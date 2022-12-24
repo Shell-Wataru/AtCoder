@@ -3,15 +3,13 @@
 #include <vector>
 #include <deque>
 #include <queue>
-#include <set>
+#include <stack>
 #include <map>
-#include <limits>
-#include <cmath>
 #include <iomanip>
-#include <functional>
-#include <random>
-#include <boost/multiprecision/cpp_int.hpp>
-
+#include <cmath>
+#include <set>
+#include <numeric>
+#include <unordered_map>
 using namespace std;
 using ll = long long;
 
@@ -20,16 +18,23 @@ int main()
     // 整数の入力
     ll N;
     cin >> N;
-    set<string> A;
+    map<string, ll> counts;
     for (int i = 0; i < N; i++)
     {
         string S;
         cin >> S;
-        if (A.find(S) == A.end())
+        counts[S]++;
+    }
+    ll maximum = 0;
+    string ans;
+    for (auto p : counts)
+    {
+        if (p.second > maximum)
         {
-            A.insert(S);
-            cout << i + 1 << endl;
+            ans = p.first;
+            maximum = p.second;
         }
     }
+    cout << ans << endl;
     return 0;
 }
