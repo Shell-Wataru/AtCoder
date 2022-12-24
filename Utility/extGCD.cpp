@@ -1,5 +1,6 @@
 // 返り値: a と b の最大公約数
 // ax + by = gcd(a, b) を満たす (x, y) が格納される
+// 符号に注意 a> 0, b> 0が前提
 long long extGCD(long long a, long long b, long long &x, long long &y) {
     if (b == 0) {
         x = 1;

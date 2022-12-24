@@ -1,0 +1,35 @@
+ll value(vector<ll> &sumA, ll left, ll right, ll center)
+{
+    return abs(sumA[center] - sumA[left] - sumA[right] + sumA[center]);
+}
+
+
+ll three_search(vector<ll> &sumA, ll left, ll right, ll l, ll r)
+{
+    // cout << l << "~" << r << endl;
+    if (l + 2 >= r)
+    {
+        vector<pair<ll, ll>> values;
+        for (int i = l; i < r; i++)
+        {
+            values.push_back({value(sumA, left, right, i), i});
+        }
+        sort(values.begin(), values.end());
+        return values.front().second;
+    }
+    else
+    {
+        ll t1 = (2 * l + r) / 3;
+        ll t2 = (l + 2 * r) / 3;
+        ll t1_value = value(sumA, left, right, t1);
+        ll t2_value = value(sumA, left, right, t2);
+        if (t1_value <= t2_value)
+        {
+            return three_search(sumA, left, right, l, t2);
+        }
+        else
+        {
+            return three_search(sumA, left, right, t1, r);
+        }
+    }
+}

@@ -8,6 +8,7 @@
 #include <cmath>
 #include <set>
 #include <numeric>
+#include <climits>
 #include <boost/multiprecision/cpp_int.hpp>
 using namespace std;
 using ll = long long;
@@ -65,7 +66,7 @@ struct SegmentTree {
 
   int find_subtree(int a, T &x, T &M, bool type) {
     while(a < sz) {
-      T nxt = type ? seg[2 * a + type] : seg[2 * a + type];
+      T nxt = type ? Monoid::op(seg[2 * a + type],M) : Monoid::op(seg[2 * a + type],M);
       if(Monoid::check(nxt,x)) a = 2 * a + type;
       else M = nxt,a = 2 * a + 1 - type;
     }
@@ -160,7 +161,7 @@ struct monoid_min_with_index
     }
   }
   static const T id(){
-    return {INT_MAX,-1};
+    return {numeric_limits<ll>::max(),-1};
   }
 
   static const bool check(T &current, T &x) {
@@ -179,7 +180,7 @@ struct monoid_max_with_index
     }
   }
   static const T id(){
-    return {INT_MIN,-1};
+    return {numeric_limits<ll>::min(),-1};
   }
 };
 
@@ -191,15 +192,24 @@ int main() {
       seg.set(i, a[i]);
   }
   seg.build();
-  // cout << seg.query(0,a.size()) << endl;
-  // seg.update(0,10);
-  // cout << seg.query(0,a.size()) << endl;
-  // seg.update(0,1);
-  // cout << seg.find_first(0,4) << endl;
-  // cout << seg.find_first(1,4) << endl;
-  cout << seg.find_last(0,9) << endl;
-  cout << seg.find_last(0,8) << endl;
-  cout << seg.find_last(0,7) << endl;
-  // cout << seg.find_last(a.size(),4) << endl;
-  // cout << seg.find_last(a.size()-1,4) << endl;
+  for(int i = 1;i < 10;i++){
+    cout << seg.find_first(0,i) << endl;
+  }
+  for(int i = 1;i < 10;i++){
+    cout << seg.find_last(a.size(),i) << endl;
+  }
 }
+
+// int main() {
+//   vector<int> a{1,0,1,1,1,1,1,1,1,1};
+//   SegmentTree< monoid_sum > seg(a.size());
+//   for(int i = 0;i < a.size();i++){
+//       seg.set(i, a[i]);
+//   }
+//   seg.build();
+//     cout << seg.find_first(0,2) << endl;
+//     // assert(seg.find_first(0,2) ==2);
+//   for(int i = 0;i < 10;i++){
+//     cout << seg.find_first(0,i) << endl;
+//   }
+// }

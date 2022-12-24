@@ -1,0 +1,9 @@
+//subset idiom
+	for(int i=0;i<(1<<n);i++){
+		dp[i]=1;
+		// 0は含まれない
+		for(int sub=i&(i-1);sub;sub=(sub-1)&i){
+			dp[i]=(dp[i]-1ll*dp[sub]*get_cost(sub,i^sub)%mod+mod)%mod;
+		}
+		ans=(ans+1ll*dp[i]*__builtin_popcount(i)%mod*get_cost(i,full^i))%mod;
+	}

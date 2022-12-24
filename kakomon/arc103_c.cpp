@@ -15,28 +15,59 @@
 using namespace std;
 using ll = long long;
 
-int main()
+int solve()
 {
-    string s;
-    cin >> s;
-    ll n = s.length();
-    if (s.back() == '1' || s.front() == '0'){
+    string S;
+    cin >> S;
+    ll n = S.size();
+    vector<vector<ll>> G(n);
+    if (S.back() == '1' || S[0] == '0')
+    {
         cout << -1 << endl;
         return 0;
     }
-    for(int i = 0;i <= n - 2 - i;i++){
-        if (s[i] != s[n-2-i]){
-            cout << -1 << endl;
+    S.pop_back();
+    string revS = S;
+    reverse(revS.begin(), revS.end());
+    if (S != revS)
+    {
+        cout << -1 << endl;
+        return 0;
+    }
+    ll last = 0;
+    for (int i = 0; i < (n + 1) / 2; i++)
+    {
+        if (S[i] == '1')
+        {
+            for (int j = last + 1; j <= i + 1; j++)
+            {
+                G[last].push_back(j);
+            }
+            last = i + 1;
         }
     }
-    ll last_one = -1;
-    for(int i = 0;i < n-1;i++){
-        if (i == 0 || s[i-1] == '1'){
-            cout << i << " " << i + 1 << "\n";
-        }else{
-            cout << i-1 << " " << i + 1 << "\n";
+    for (int i = last + 1; i < n; i++)
+    {
+        G[last].push_back(i);
+    }
+    for (int i = 0; i < n; i++)
+    {
+        for (auto to : G[i])
+        {
+            cout << i + 1 << " " << to + 1 << "\n";
         }
     }
+    cout << flush;
+    return 0;
+}
+
+int main()
+{
+    // ll t;
+    // cin >> t;
+    // for(int i = 0;i < t;i++){
+    solve();
+    // }
     cout << flush;
     return 0;
 }

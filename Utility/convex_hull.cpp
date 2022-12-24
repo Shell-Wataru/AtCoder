@@ -20,7 +20,7 @@ ll cross(pair<ll,ll> &O, pair<ll,ll> &A, pair<ll,ll> &B)
 vector<pair<ll,ll>> convex_hull(vector<pair<ll,ll>> P)
 {
 	size_t n = P.size(), k = 0;
-	if (n <= 3) return P;
+	// if (n <= 3) return P;
 	vector<pair<ll,ll>> H(2*n);
 
 	// Sort points lexicographically

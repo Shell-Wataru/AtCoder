@@ -42,6 +42,7 @@ public:
     }
 };
 
+// 0~N-1に注意,compressするか確認
 ll inversion_number(vector<ll> &A){
     BIT<ll> bit(A.size()*2);
     ll ans = 0;

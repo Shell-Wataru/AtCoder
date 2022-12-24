@@ -79,7 +79,10 @@ int main(){
     compress.add(5);
     compress.add(10);
     compress.add(20);
+    compress.add(20);
+    compress.add(20);
     compress.build();
+    cout << compress.size() << endl;
     cout << compress.get(1) << endl;
     cout << compress.get(5) << endl;
     cout << compress.get(10) << endl;

@@ -42,78 +42,21 @@ ll combination(vector<ll> &factorial, ll n, ll m)
     }
 }
 
-string next_x(string &s)
-{
-    if (s.size() == 1)
-    {
-        return s;
-    }
-    else
-    {
-        string ret;
-        for (int i = 0; i < s.size() - 1; i++)
-        {
-            ret += (char)'0' + abs(s[i + 1] - s[i]);
-        }
-        return ret;
-    }
-}
 int main()
 {
     // 整数の入力
     ll N;
-    string S;
     cin >> N;
-    cin >> S;
-
-    vector<ll> twos = two_powers(N);
-    vector<ll> factorial(N + 1, 0);
-    for (int i = 1; i <= N; i++)
-    {
-        factorial[i] = factorial[i - 1] + twos[i];
-        // cout << i << ":" << factorial[i] << endl;
+    vector<ll> A(N);
+    vector<ll> DP(N+1,numeric_limits<ll>::max());
+    DP[0] = numeric_limits<ll>::min();
+    for(int i = 0;i < N;i++){
+        cin >> A[i];
     }
-
-    string x = next_x(S);
-    // cout << x << endl;
-    map<ll, ll> elementary_counts{{0, 0}, {1, 0}, {2, 0}};
-    map<ll, ll> counts{{0, 0}, {1, 0}, {2, 0}};
-    for (int i = 0; i < x.length(); i++)
-    {
-        ll c = combination(factorial, x.size() - 1, i);
-        // cout << x.size() -1 << "C" << i   << endl;
-        // cout << (x[i] - '0') << " " << c << endl;
-        elementary_counts[x[i] - '0']++;
-        counts[x[i] - '0'] = (counts[x[i] - '0'] + c) % 2;
+    for(int i = 0;i < N;i++){
+        auto itr = lower_bound(DP.begin(),DP.end(),A[i]);
+        *itr = A[i];
     }
-    // for(auto p:counts){
-    //     cout << p.first << " " << p.second << endl;
-    // }
-    if (elementary_counts[1] > 0){
-        counts[2] = 0;
-    }
-    if (counts[1] == 0 && counts[2] == 0)
-    {
-        cout << 0 << endl;
-    }
-    else if (counts[1] == 0 && counts[2] == 1)
-    {
-        cout << 2 << endl;
-    }
-    else if (counts[1] == 1 && counts[2] == 0)
-    {
-        cout << 1 << endl;
-    }
-    else
-    {
-        cout << 1 << endl;
-    }
-
-    // cout << x << endl;
-    // while(x.size() != 1){
-    //     x = next_x(x);
-    //     cout << x << endl;
-    // }
-    // cout << x << endl;
+    cout << N - (lower_bound(DP.begin(),DP.end(),numeric_limits<ll>::max()) - DP.begin()) << endl;
     return 0;
 }

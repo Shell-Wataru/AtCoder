@@ -20,7 +20,9 @@ int main()
     // 整数の入力
     ll N;
     cin >> N;
-    vector<pair<ll,ll>> data(N);
+    vector<pair<ll,ll>> data_bigger;
+    vector<pair<ll,ll>> data_same;
+    vector<pair<ll,ll>> data_smaller;
     for(int i = 0;i < N;i++){
         string s;
         cin >> s;
@@ -34,37 +36,40 @@ int main()
             }
             minimum = min(minimum,total);
         }
-        data[i] = {minimum,total};
-    }
-    sort(data.begin(),data.end(),[](auto &l,auto &r){
-        if ((r.first >= 0) != l.first >= 0){
-            return (l.first >= 0) > (r.first >= 0);
-        }else if(r.second >= 0 != l.second >= 0){
-            return (l.second >= 0) > (r.second >= 0);
-        }else if (r.first >= 0 && r.second >= 0){
-            return r.first > l.first;
-        }else if (r.first >= 0 && r.second < 0){
-            return r.first > l.first;
-        }else if (r.first < 0 && r.second >= 0){
-            return l.first < r.first;
-        }else if ((l.first == l.second) != (r.first == r.second)){
-            return (l.first == l.second) < (r.first == r.second);
-        }else if(l.first == l.second){
-            return l.second > r.second;
+        if (total > 0){
+            data_bigger.push_back({minimum,total});
+        }else if (total == 0 ){
+            data_same.push_back({minimum,total});
         }else{
-            return (l.second - l.first) > (r.second - r.first);
+            data_smaller.push_back({minimum-total,-total});
         }
-    });
-    // for(int i = 0;i < N;i++){
-    //     cout << data[i].first <<"," << data[i].second << endl;
-    // }
+    }
+    sort(data_bigger.rbegin(),data_bigger.rend());
+    sort(data_smaller.begin(),data_smaller.end());
     ll all_total = 0;
     bool can_make = true;
-    for(int i = 0; i< N;i++){
-        if (all_total + data[i].first < 0){
+    for(auto p:data_bigger){
+        ll min_v = all_total + p.first;
+        if (min_v < 0){
             can_make = false;
         }
-        all_total += data[i].second;
+        all_total += p.second;
+    }
+    for(auto p:data_same){
+        ll min_v = all_total + p.first;
+        if (min_v < 0){
+            can_make = false;
+        }
+        all_total += p.second;
+    }
+    for(auto p:data_smaller){
+        ll minimum = p.first - p.second;
+        ll total = - p.second;
+        ll min_v = all_total + minimum;
+        if (min_v < 0){
+            can_make = false;
+        }
+        all_total += total;
     }
     if (can_make && all_total == 0){
         cout << "Yes" << endl;

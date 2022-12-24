@@ -145,10 +145,71 @@ struct LazySegmentTree {
   }
 };
 
+struct monoid_sum
+{
+  ll value,size;
+  bool operator==(const monoid_sum& x) { return x.value == value && x.size == size; }
+  bool operator!=(const monoid_sum& x) { return !(x.value == value && x.size == size); }
+};
+
+struct operator_monoid_add
+{
+  ll value;
+  bool operator==(const operator_monoid_add& x) { return x.value == value; }
+  bool operator!=(const operator_monoid_add& x) { return x.value != value; }
+};
+
+monoid_sum f(monoid_sum a,monoid_sum b){
+  return monoid_sum{a.value+b.value,a.size+b.size};
+}
+monoid_sum g(monoid_sum a,operator_monoid_add b){
+  return monoid_sum{a.value+b.value*a.size,a.size};
+}
+
+operator_monoid_add h(operator_monoid_add a,operator_monoid_add b){
+  return operator_monoid_add{a.value+b.value};
+}
+
+
+struct operator_monoid_update
+{
+  ll value;
+  bool applied;
+  bool operator==(const operator_monoid_update& x) { return x.value == value && x.applied == applied; }
+  bool operator!=(const operator_monoid_update& x) { return !(x.value == value && x.applied == applied); }
+};
+
+// monoid_sum f(monoid_sum a,monoid_sum b){
+//   return monoid_sum{a.value+b.value,a.size+b.size};
+// }
+// monoid_sum g(monoid_sum a,operator_monoid_update b){
+//     if (b.applied){
+//         return a;
+//     }else{
+//         return monoid_sum{b.value*a.size,a.size};
+//     }
+
+// }
+// operator_monoid_update h(operator_monoid_update a,operator_monoid_update b){
+//     if (b.applied){
+//         return a;
+//     }else{
+//         return b;
+//     }
+// }
+
+
+int add(int a,int b){
+  return a+b;
+}
 int main(){
   vector<int> a{1,2,3,4,5,6,7,8};
-  LazySegmentTree lst(a);
-  cout << lst.find(0,4) << endl;
-  lst.update(0,2,6);
-  cout << lst.find(0,4) << endl;
+  LazySegmentTree<monoid_sum,operator_monoid_add> lst(a.size(),f,g,h,monoid_sum{0,0},operator_monoid_add{0});
+  for(int i = 0;i < a.size();i++){
+    lst.set(i,{a[i],1});
+  }
+  lst.build();
+  cout << lst.query(0,4).value << endl;
+  lst.update(0,4,{10});
+  cout << lst.query(0,4).value << endl;
 }
